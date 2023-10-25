@@ -1,0 +1,11 @@
+export const loginPath = "/auth/login";
+export const resgiterPath = "/auth/register";
+export const homeClubesPath = "/homeClubes";
+export const clubManagmentPath = "/clubManagment";
+export const clubFormPath = "/clubForm";
+export const registerGuestPath = "/registerGuest";
+export const receiptHistoryPath = "/receiptHistory";
+export const profilePath = "/profile";
+export const userDataPath = "/userData";
+export const userCardsPath = "/userCards";
+export const tableHistoryPath = "/receipt";
