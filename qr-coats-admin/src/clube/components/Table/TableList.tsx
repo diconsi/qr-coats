@@ -15,14 +15,14 @@ const TableList = ({
   data,
   columns,
 }) => {
-  // console.log(data,columns)
+
   const handleFilterByName = (event: ChangeEvent<HTMLInputElement>) => {
     // setPage(0);
     // setFilterName(event.target.value);
   };
 
   const onClick = () => {
-    handleActioModal(newEmployee);
+    handleActioModal(title);
   };
 
   return (

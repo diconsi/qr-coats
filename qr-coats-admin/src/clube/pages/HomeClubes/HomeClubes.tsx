@@ -1,14 +1,13 @@
 import { IClub } from "@/clube/interfaces";
 import { ClubeLayout } from "@/clube/layout";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
-import { getClubesByUser } from "@/services/user.services";
+import { getClubesByAdmin } from "@/services";
 import { setClubes } from "@/store/club/clubSlice";
 import SearchIcon from "@mui/icons-material/Search";
 import { Grid, InputAdornment, TextField } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import ClubCard from "./components/ClubCard";
-import { setEmployees } from "@/store/employee/employeeSlice";
 
 const HomeClubes = () => {
   const dispatch = useDispatch();
@@ -21,12 +20,8 @@ const HomeClubes = () => {
   }, []);
 
   const init = async () => {
-    const resp = await callEndpoint(getClubesByUser(uid, access_token));
-    const {
-      data: { clubes, employees },
-    } = resp;
-    dispatch(setClubes(clubes));
-    dispatch(setEmployees(employees));
+    const resp = await callEndpoint(getClubesByAdmin(uid, access_token));
+    dispatch(setClubes(resp.data));
   };
 
   return (

@@ -7,6 +7,7 @@ const HeaderSectionPage = ({
   disableButton = false,
 }) => {
   const handleButton = () => {
+    debugger
     onClick();
   };
   return (

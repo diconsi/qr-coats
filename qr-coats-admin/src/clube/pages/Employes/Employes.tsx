@@ -2,10 +2,16 @@ import { ModalComponent, TableList } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
 import { deleteEmployee, editEmployee, newEmployee } from "@/constants";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
-import { createEmployee, deleteUser, updateUser } from "@/services";
+import {
+  createEmployee,
+  deleteUser,
+  getEmployeesByAdmin,
+  updateUser,
+} from "@/services";
 import {
   addEmployee,
   deleteEmployeeById,
+  setEmployees,
   updateEmployee,
 } from "@/store/employee/employeeSlice";
 import { ActionIcon, Group } from "@mantine/core";
@@ -21,7 +27,7 @@ import {
   Select,
   TextField,
 } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 const initialState = {
   name: "",
@@ -31,13 +37,22 @@ const initialState = {
   gender: "",
 };
 const Employes = () => {
-  const { access_token, uid } = useSelector((store) => store.authState);
-  const {
-    activeClub: { _id },
-  } = useSelector((store) => store.clubState);
-  const { employees } = useSelector((store) => store.employeeState);
   const { callEndpoint } = useFetchAndLoad();
   const dispatch = useDispatch();
+  const { access_token, uid } = useSelector((store) => store.authState);
+  const { employees } = useSelector((store) => store.employeeState);
+  useEffect(() => {
+    init();
+  }, []);
+
+  const init = async () => {
+    const {
+      data: { employees },
+    } = await callEndpoint(getEmployeesByAdmin(uid, access_token));
+
+    dispatch(setEmployees(employees));
+  };
+
   const [showModal, setShowModal] = useState(false);
   const [titleModal, setTitleModal] = useState("");
   const [state, setState] = useState(initialState);
@@ -121,7 +136,6 @@ const Employes = () => {
       password: state.password,
       gender: state.gender,
       rol: "employee",
-      idClub: _id,
       idAdmin: uid,
     };
 
@@ -263,7 +277,7 @@ const Employes = () => {
     <ClubeLayout>
       <Container sx={{ height: "80%", maxWidth: "100% !important" }}>
         <TableList
-          title=" Employees"
+          title={newEmployee}
           titleButton={newEmployee}
           iconHeaderSection={<PersonAddOutlinedIcon />}
           data={employees}

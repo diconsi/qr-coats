@@ -1,450 +1,298 @@
-import {
-  ContainerBorder,
-  InputSwitch,
-  ModalComponent,
-} from "@/clube/components";
+import { ModalComponent, TableList } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
-import { applySortFilter, getComparator } from "@/tools/tools";
 import {
-  DeleteOutline,
-  EditOutlined,
-  MoreVertOutlined,
-} from "@mui/icons-material";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import {
-  Alert,
-  AlertTitle,
-  Button,
-  Checkbox,
-  Container,
-  FormControl,
-  Grid,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Popover,
-  Select,
-  Stack,
-  TableBody,
-  TableCell,
-  TableRow,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-
-import TableList from "@/clube/components/Table/TableList";
-import {
-  TABLE_HEAD,
   deleteLocation,
   editLocation,
   newLocation,
 } from "@/constants/locations";
+import useFetchAndLoad from "@/hooks/useFetchAndLoad";
 import {
-  startDeletingLocation,
-  startLoadingLocations,
-  startSaveLocation,
-  startUpdateLocation,
-} from "@/store/location";
-import { setActiveLocation } from "@/store/location/locationSlice";
-
+  createLocation,
+  eliminaLocation,
+  getLocations,
+} from "@/services/location.services";
+import {
+  addLocation,
+  deleteLocationById,
+  setLocations,
+  updateLocation,
+} from "@/store/location/locationSlice";
+import { ActionIcon, Group } from "@mantine/core";
+import { DeleteOutline, EditOutlined } from "@mui/icons-material";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import {
+  Container,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+} from "@mui/material";
+import { ChangeEvent, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+const initialState = {
+  locationType: "",
+  name: "",
+  numberOfHangers: 0,
+  numberSlots: 0,
+};
 const Location = () => {
-  const { locations, activeLocation } = useSelector(
-    (store) => store.locationState
-  );
-
+  const { locations } = useSelector((store) => store.locationState);
+  const { access_token } = useSelector((store) => store.authState);
   const {
-    activeClub: { slotsActive, numberLocations, name: clubName },
+    activeClub: { slotsActive, numberLocations, name: clubName, _id },
   } = useSelector((store) => store.clubState);
-
-  const disableButton = locations.length < numberLocations;
-
-  const dispatch = useDispatch();
-
   useEffect(() => {
-    dispatch(startLoadingLocations());
+    init();
   }, []);
+  const init = async () => {
+    const { data } = await callEndpoint(getLocations(_id, access_token));
+    dispatch(setLocations(data));
+  };
 
-  useEffect(() => {
-    if (activeLocation != null) {
-      setName(activeLocation.name);
-      setHanges(activeLocation.numberHanges);
-      setSlots(activeLocation.numberSlots);
-      setType(activeLocation.locationType);
-      setStatus(activeLocation.status);
-    }
-  }, [activeLocation]);
-
-  const [open, setOpen] = useState(null);
-  const [page, setPage] = useState(0);
-  const [order, setOrder] = useState("asc");
-  const [selected, setSelected] = useState([]);
-  const [orderBy, setOrderBy] = useState("name");
-  const [filterName, setFilterName] = useState("");
-  const [rowsPerPage, setRowsPerPage] = useState(5);
-  const [titleModal, setTitleModal] = useState("");
+  const { callEndpoint } = useFetchAndLoad();
+  const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
+  const [titleModal, setTitleModal] = useState("");
+  const [state, setState] = useState(initialState);
+  const [activeLocation, setActiveLocation] = useState({});
+  const disableButton =
+    locations.length !== 0 ? locations.length < numberLocations : false;
 
-  const [name, setName] = useState("");
-  const [hanges, setHanges] = useState(0);
-  const [slots, setSlots] = useState(0);
-  const [status, setStatus] = useState(true);
-  const [type, setType] = useState("");
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
 
-  const handleOpenMenu = (event, row) => {
-    dispatch(setActiveLocation(row));
-    setOpen(event.currentTarget);
+    const newValue =
+      name === "numberSlots" || name === "numberOfHangers"
+        ? parseInt(value)
+        : value;
+    setState({
+      ...state,
+      [name]: newValue,
+    });
   };
 
-  const handleCloseMenu = () => {
-    setOpen(null);
-  };
-
-  const handleClick = (name) => {
-    const selectedIndex = selected.indexOf(name);
-    let newSelected = [];
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
+  const handleActioModal = (titleModal: string, location: any) => {
+    if (location !== undefined) setActiveLocation(location);
+    if (titleModal === editLocation) {
+      const { locationType, name, numberOfHangers, numberSlots } = location;
+      setState({ ...state, locationType, name, numberOfHangers, numberSlots });
     }
-    setSelected(newSelected);
-  };
-
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - locations.length) : 0;
-
-  const filteredLocations = applySortFilter(
-    locations,
-    getComparator(order, orderBy),
-    filterName
-  );
-
-  const isNotFound = !filteredLocations.length && !!filterName;
-
-  const handleActioModal = (titleModal: string) => {
     setTitleModal(titleModal);
     setShowModal(true);
-    handleCloseMenu();
   };
 
-  const handleCloseModal = () => {
-    resetIpunts();
+  const onClosedModal = () => {
     setShowModal(false);
-    dispatch(setActiveLocation(null));
+    setState(initialState);
+    setActiveLocation({});
+  };
+  const columns = [
+    { accessor: "name", title: "Location", textAlignment: "center" },
+    { accessor: "locationType", title: "Type", textAlignment: "center" },
+    { accessor: "numberSlots", title: "Number Slots", textAlignment: "center" },
+    {
+      accessor: "numberOfHangers",
+      title: "Number Hangers",
+      textAlignment: "center",
+    },
+    {
+      accessor: "acciones",
+      title: "Acciones",
+      textAlignment: "center",
+      render: (row) => renderOpcion(row),
+    },
+  ];
+
+  const renderOpcion = (row) => {
+    return (
+      <Group spacing={4} position="center" noWrap>
+        <ActionIcon
+          color="blue"
+          onClick={() => handleActioModal(editLocation, row)}
+        >
+          <EditOutlined />
+        </ActionIcon>
+        <ActionIcon
+          color="red"
+          onClick={() => handleActioModal(deleteLocation, row)}
+        >
+          <DeleteOutline />
+        </ActionIcon>
+      </Group>
+    );
   };
 
-  const handleTypeChange = (event) => {
-    setType(event.target.value);
-  };
-
-  const handleNumberChange = (event, type) => {
-    const newValue = event.target.value;
-    if (
-      !isNaN(newValue) &&
-      Number.isInteger(Number(newValue)) &&
-      Number(newValue) >= 0
-    ) {
-      type === "slots" ? setSlots(newValue) : setHanges(newValue);
+  const onSaveLocation = async () => {
+    const newLocation = {
+      locationType: state.locationType,
+      name: state.name,
+      numberOfHangers: state.numberOfHangers,
+      numberSlots: state.numberSlots,
+      status: true,
+      clubId: _id,
+    };
+    const { status, data } = await callEndpoint(
+      createLocation(access_token, newLocation)
+    );
+    if (status === 201) {
+      setState(initialState);
+      dispatch(addLocation(data));
+      onClosedModal();
     }
   };
 
-  const resetIpunts = () => {
-    setTitleModal("");
-    setName("");
-    setHanges(0);
-    setSlots(0);
-    setType("");
-    setStatus(true);
+  const onDeletedLocation = async () => {
+    const resp = await callEndpoint(
+      eliminaLocation(activeLocation._id, { status: false }, access_token)
+    );
+
+    const {
+      status,
+      data: { _id },
+    } = resp;
+    if (status === 200) {
+      setActiveLocation({});
+      dispatch(deleteLocationById(_id));
+      onClosedModal();
+    }
+  };
+
+  const onEditLocation = async () => {
+    // const location = {
+    //   name: state.name,
+    //   username: state.username,
+    //   email: state.email,
+    //   gender: state.gender,
+    // };
+    // const { status, data } = await callEndpoint(
+    //   updateUser(activeUser._id, employee, access_token)
+    // );
+    // if (status === 200) {
+    //   setActiveLocation({});
+    //   dispatch(updateLocation(data));
+    //   onClosedModal();
+    // }
   };
 
   const onSave = () => {
     if (titleModal === newLocation) {
-      const newLocation = {
-        name,
-        numberHanges: hanges,
-        numberSlots: slots,
-        status,
-        locationType: type,
-      };
-      dispatch(startSaveLocation(newLocation));
+      onSaveLocation();
+    } else if (titleModal === deleteLocation) {
+      onDeletedLocation();
+    } else if (titleModal === editLocation) {
+      onEditLocation();
     }
-
-    if (titleModal === editLocation) {
-      const newLocation = {
-        name,
-        numberHanges: hanges,
-        numberSlots: slots,
-        status,
-        locationType: type,
-      };
-      dispatch(startUpdateLocation(newLocation));
-    }
-
-    if (titleModal === deleteLocation) {
-      dispatch(startDeletingLocation());
-    }
-
-    resetIpunts();
-    handleCloseModal();
-    dispatch(setActiveLocation(null));
   };
 
   const renderBody = () => {
-    if (titleModal === deleteLocation) {
-      return (
-        <Grid item sx={{ width: "100%" }}>
-          Do you want to delete the <strong>record?</strong>
-        </Grid>
-      );
-    }
-
-    if (titleModal === editLocation || titleModal === newLocation) {
-      return (
-        <Grid container>
-          <Grid item mt={1} md={12}>
-            <TextField
-              fullWidth
-              type="text"
-              label="Name"
-              placeholder="Name Location"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-          </Grid>
-          <Grid item mt={1} md={6} sx={{ pr: 0.5 }}>
-            <FormControl sx={{ width: "100%" }}>
-              <InputLabel>Type</InputLabel>
-              <Select value={type} onChange={handleTypeChange} label="Género">
-                <MenuItem value="">
-                  <em>Seleccionar</em>
-                </MenuItem>
-                <MenuItem value="Item Cheker">Item Cheker</MenuItem>
-                <MenuItem value="Entry">Entry</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item mt={1} md={6} sx={{ pl: 0.5 }}>
-            <ContainerBorder
-              width={"100 %"}
-              height={"100%"}
-              padding={"0px"}
-              title={""}
-            >
-              <InputSwitch
-                checked={status}
-                handleChange={setStatus}
-                label="Location Status"
-              />
-            </ContainerBorder>
-          </Grid>
-          {type !== "Entry" && (
-            <>
-              <Grid item mt={1} md={6}>
-                <TextField
-                  fullWidth
-                  label="Hangers"
-                  type="number"
-                  placeholder="Hangers"
-                  value={hanges}
-                  onChange={(e) => handleNumberChange(e, "hanges")}
-                  inputProps={{
-                    min: 0,
-                    step: 1,
-                  }}
-                  variant="outlined"
-                  sx={{ pr: 0.5 }}
-                />
-              </Grid>
-              <Grid item mt={1} md={6}>
-                <TextField
-                  fullWidth
-                  sx={{ pl: 0.5 }}
-                  label="Slots"
-                  type="number"
-                  placeholder="Slots"
-                  disabled={!slotsActive}
-                  value={slots}
-                  onChange={(e) => handleNumberChange(e, "slots")}
-                  inputProps={{
-                    min: 0,
-                    step: 1,
-                  }}
-                  variant="outlined"
-                />
-              </Grid>
-            </>
-          )}
-        </Grid>
-      );
-    }
-    return null;
-  };
-
-  const renderFooter = () => {
     return (
-      <Grid
-        container
-        mt={1}
-        spacing={2}
-        flexDirection="row"
-        justifyContent="end"
-      >
-        <Button onClick={handleCloseModal} variant="contained">
-          Cancelar
-        </Button>
-        <Button
-          sx={{ ml: 2 }}
-          onClick={onSave}
-          variant="contained"
-          color={titleModal === deleteLocation ? "error" : undefined}
-        >
-          {titleModal === newLocation
-            ? "Guardar"
-            : titleModal === editLocation
-            ? "Editar"
-            : "Eliminar"}
-        </Button>
-      </Grid>
+      <>
+        {titleModal === deleteLocation ? (
+          <Grid item sx={{ width: "100%" }}>
+            Realmente quiere eliminar <strong>el location!</strong>
+          </Grid>
+        ) : (
+          <Grid container>
+            <Grid item mt={1} md={12}>
+              <TextField
+                fullWidth
+                type="text"
+                label="Name"
+                placeholder="Name Location"
+                value={state.name}
+                id="name"
+                name="name"
+                onChange={onChange}
+              />
+            </Grid>
+            <Grid item mt={1} md={12} sx={{ pr: 0.5 }}>
+              <FormControl sx={{ width: "100%" }}>
+                <InputLabel>Type</InputLabel>
+                <Select
+                  value={state.locationType}
+                  onChange={onChange}
+                  id="locationType"
+                  name="locationType"
+                  label="Type"
+                >
+                  <MenuItem value="">
+                    <em>Seleccionar</em>
+                  </MenuItem>
+                  <MenuItem value="Item Cheker">Item Cheker</MenuItem>
+                  <MenuItem value="Entry">Entry</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
+            {state.locationType !== "Entry" && (
+              <>
+                <Grid item mt={1} md={6}>
+                  <TextField
+                    fullWidth
+                    label="Hangers"
+                    type="number"
+                    placeholder="Hangers"
+                    id="numberOfHangers"
+                    name="numberOfHangers"
+                    value={state.numberOfHangers}
+                    onChange={onChange}
+                    inputProps={{
+                      min: 0,
+                      step: 1,
+                    }}
+                    variant="outlined"
+                    sx={{ pr: 0.5 }}
+                  />
+                </Grid>
+                <Grid item mt={1} md={6}>
+                  <TextField
+                    fullWidth
+                    sx={{ pl: 0.5 }}
+                    label="Slots"
+                    type="number"
+                    placeholder="Slots"
+                    id="numberSlots"
+                    name="numberSlots"
+                    value={state.numberSlots}
+                    disabled={!slotsActive}
+                    onChange={onChange}
+                    inputProps={{
+                      min: 0,
+                      step: 1,
+                    }}
+                    variant="outlined"
+                  />
+                </Grid>
+              </>
+            )}
+          </Grid>
+        )}
+      </>
     );
   };
+
   return (
     <ClubeLayout>
       <Container sx={{ height: "80%", maxWidth: "100% !important" }}>
         <TableList
-          disableButton={!disableButton}
-          dataTable={locations}
-          filterName={filterName}
-          setFilterName={setFilterName}
-          title={`${clubName} - Locations`}
+          title={newLocation}
           titleButton={newLocation}
-          handleActioModal={() => handleActioModal(newLocation)}
-          tableHead={TABLE_HEAD}
-          rowCount={locations.length}
-          isNotFound={isNotFound}
-          selected={selected}
-          setSelected={setSelected}
-          orderBy={orderBy}
-          setOrderBy={setOrderBy}
-          page={page}
-          setPage={setPage}
-          order={order}
-          setOrder={setOrder}
-          rowsPerPage={rowsPerPage}
-          setRowsPerPage={setRowsPerPage}
           iconHeaderSection={<MapOutlinedIcon />}
-        >
-          <TableBody>
-            {filteredLocations
-              .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-              .map((row) => {
-                const {
-                  id,
-                  name,
-                  locationType,
-                  numberHanges,
-                  numberSlots,
-                  status,
-                } = row;
-                const selectedUser = selected.indexOf(name) !== -1;
-                return (
-                  <TableRow
-                    hover
-                    key={id}
-                    tabIndex={-1}
-                    role="checkbox"
-                    selected={selectedUser}
-                  >
-                    <TableCell padding="checkbox">
-                      <Checkbox
-                        checked={selectedUser}
-                        onChange={(event) => handleClick(event, name)}
-                      />
-                    </TableCell>
-                    <TableCell component="th" scope="row" padding="none">
-                      <Stack direction="row" alignItems="center" spacing={2}>
-                        <Typography variant="subtitle2" noWrap>
-                          {name}
-                        </Typography>
-                      </Stack>
-                    </TableCell>
-                    <TableCell align="left">{locationType}</TableCell>
-                    <TableCell align="left">{numberHanges}</TableCell>
-                    <TableCell align="left">{numberSlots}</TableCell>
-                    <TableCell align="left">
-                      <Alert severity={status ? "success" : "error"}>
-                        <Typography>
-                          {status ? "Active" : "Inactive"}
-                        </Typography>
-                      </Alert>
-                    </TableCell>
-                    <TableCell align="right">
-                      <IconButton
-                        size="large"
-                        color="inherit"
-                        onClick={(event) => handleOpenMenu(event, row)}
-                      >
-                        <MoreVertOutlined />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={6} />
-              </TableRow>
-            )}
-          </TableBody>
-        </TableList>
+          data={locations}
+          disableButton={disableButton}
+          columns={columns}
+          handleActioModal={handleActioModal}
+        />
+        <ModalComponent
+          title={titleModal}
+          center
+          body={renderBody()}
+          showModal={showModal}
+          onClose={onClosedModal}
+          onSave={onSave}
+        />
       </Container>
-      <Popover
-        open={Boolean(open)}
-        anchorEl={open}
-        onClose={handleCloseMenu}
-        anchorOrigin={{ vertical: "top", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "right" }}
-        PaperProps={{
-          sx: {
-            p: 1,
-            width: "11%",
-            "& .MuiMenuItem-root": {
-              px: 1,
-              typography: "body2",
-              borderRadius: 0.75,
-            },
-          },
-        }}
-      >
-        <MenuItem onClick={() => handleActioModal(editLocation)}>
-          <EditOutlined />
-          {editLocation}
-        </MenuItem>
-
-        <MenuItem
-          sx={{ color: "error.main" }}
-          onClick={() => handleActioModal(deleteLocation)}
-        >
-          <DeleteOutline />
-          {deleteLocation}
-        </MenuItem>
-      </Popover>
-      <ModalComponent
-        title={titleModal}
-        showModal={showModal}
-        onHide={handleCloseModal}
-        body={renderBody()}
-        footer={renderFooter()}
-        center
-      />
     </ClubeLayout>
   );
 };

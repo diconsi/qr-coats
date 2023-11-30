@@ -110,7 +110,7 @@ const ClubeProfile = () => {
             <ContainerBorder title="QR Clube" height="100%" width="49%">
               <Grid display="flex" justifyContent="center" width="50%">
                 <QRCode
-                  logoImage={iconQrVisble ? (icon ? icon : null) : null}
+                  logoImage={icon }
                   logoHeight={35}
                   logoWidth={35}
                   logoPadding={1}

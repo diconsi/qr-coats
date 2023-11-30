@@ -52,3 +52,17 @@ export const deleteUser = (id: string, accesToken: string) => {
     controller,
   };
 };
+
+
+export const getEmployeesByAdmin = (idAdmin: string, accesToken: string) => {
+  const controller = loadAbort();
+  return {
+    call: axios.get(`http://localhost:3000/api/v1/user/getEmployessByAdmin/${idAdmin}`, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
+    }),
+    controller,
+  };
+};

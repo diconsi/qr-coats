@@ -22,7 +22,7 @@ const locationSlice = createSlice({
     },
     deleteLocationById: (state, action) => {
       state.locations = state.locations.filter(
-        (location) => location.id !== action.payload
+        (location) => location._id !== action.payload
       );
     },
   },
