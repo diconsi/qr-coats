@@ -1,19 +1,23 @@
+import { InputText } from "@/clube/components";
 import { IClub } from "@/clube/interfaces";
 import { ClubeLayout } from "@/clube/layout";
-import { useFetchAndLoad } from "@/hooks";
+import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
 import { getClubes } from "@/services";
-import { setClubes } from "@/store/club/clubSlice";
+import {
+  resetServicesOrder,
+  setClubes,
+  setServices,
+} from "@/store/club/clubSlice";
 import SearchIcon from "@mui/icons-material/Search";
-import { Grid, InputAdornment, TextField } from "@mui/material";
+import { Grid, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import ClubCard from "./components/ClubCard";
 
 const HomeClubes = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { callEndpoint } = useFetchAndLoad();
-  const { clubes } = useSelector((store) => store.clubState);
-  const { access_token } = useSelector((store) => store.authState);
+  const { clubes } = useAppSelector((store) => store.clubState);
+  const { access_token } = useAppSelector((store) => store.authState);
   const [searchClube, setSearchClube] = useState("");
   useEffect(() => {
     init();
@@ -21,47 +25,64 @@ const HomeClubes = () => {
 
   const init = async () => {
     const resp = await callEndpoint(getClubes(access_token));
-    console.log(resp);
     const { data } = resp;
     dispatch(setClubes(data));
+    dispatch(resetServicesOrder());
+    dispatch(setServices({ services: [], promotion: {} }));
   };
 
   return (
     <ClubeLayout>
-      <Grid
-        container
-        alignItems="center"
-        direction="column"
-        sx={{ height: "20%" }}
-      >
-        <TextField
-          id="filled-basic"
-          sx={{ width: { xs: "100%", md: "40%" }, height: "10%", mt: 2 }}
-          label="Find club"
-          variant="filled"
-          name="username"
-          color="primary"
-          onChange={(e) => setSearchClube(e.target.value)}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment variant="standard" position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        />
-      </Grid>
-      <Grid
-        container
-        sx={{ width: "100%", overflowY: "scroll", height: "80%" }}
-      >
-        {clubes
-          .filter((club: IClub) =>
-            club.name.toLowerCase().includes(searchClube.toLowerCase())
-          )
-          .map((club: IClub) => (
-            <ClubCard club={club} key={club._id} />
-          ))}
+      <Grid container height={"100%"}>
+        <Grid
+          display={"flex"}
+          alignItems={"center"}
+          justifyContent={"center"}
+          container
+          height={"30%"}
+        >
+          <Grid item xs={12} mt={2} textAlign={"center"}>
+            <Typography variant="h4">VENUES</Typography>
+          </Grid>
+          <Grid
+            item
+            xs={12}
+            mt={2}
+            mb={2}
+            display={"flex"}
+            justifyContent={"center"}
+          >
+            <InputText
+              type="text"
+              name="find"
+              placeholder="FIND CLUB"
+              value={searchClube}
+              onChange={(e) => setSearchClube(e.target.value)}
+              endAdornmentIcon={<SearchIcon />}
+              sx={{ width: { xs: "90%", md: "40%" } }}
+            />
+          </Grid>
+        </Grid>
+        <Grid
+          container
+          item
+          xs={12}
+          height="70%"
+          width={"100%"}
+          sx={{ overflowY: "scroll" }}
+          display={"flex"}
+          alignItems={"flex-start"}
+          justifyContent={"flex-start"}
+          alignContent={"flex-start"}
+        >
+          {clubes
+            .filter((club: IClub) =>
+              club.name.toLowerCase().includes(searchClube.toLowerCase())
+            )
+            .map((club: IClub) => (
+              <ClubCard club={club} key={club._id} />
+            ))}
+        </Grid>
       </Grid>
     </ClubeLayout>
   );

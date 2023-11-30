@@ -8,7 +8,7 @@ export interface mailDTO {
 export const getClubes = (accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get("http://localhost:3000/clube", {
+    call: axios.get("http://localhost:3000/api/v1/clube", {
       headers: {
         Authorization: `Bearer ${accesToken}`,
       },
@@ -18,26 +18,39 @@ export const getClubes = (accesToken: string) => {
   };
 };
 
-export const getClubById = (idClub: string, idAdmin: string) => {
+export const getKey = () => {
   const controller = loadAbort();
   return {
-    call: axios.get("http://localhost:3000/clubes/get-club", {
-      params: {
-        idClub: idClub,
-        idAdmin: idAdmin,
-      },
+    call: axios.get("http://localhost:3000/api/v1/stripe", {
       signal: controller.signal,
     }),
     controller,
   };
 };
 
-export const sendCustomEmail = (emailDTO: mailDTO) => {
+export const createPaymentIntent = (payment: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post("http://localhost:3000/clubes/sendCustomEmail", emailDTO, {
+    call: axios.post("http://localhost:3000/api/v1/stripe", payment, {
       signal: controller.signal,
     }),
+    controller,
+  };
+};
+
+export const sendCustomEmail = (emailDTO: mailDTO, accesToken: string) => {
+  const controller = loadAbort();
+  return {
+    call: axios.post(
+      "http://localhost:3000/api/v1/clube/sendCustomEmail",
+      emailDTO,
+      {
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+        signal: controller.signal,
+      }
+    ),
     controller,
   };
 };

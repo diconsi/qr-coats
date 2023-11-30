@@ -1,30 +1,30 @@
 import { ReactNode } from "react";
-import { Modal, Button } from "react-bootstrap";
+import { Modal } from "react-bootstrap";
 
 interface IModal {
   showModal: boolean;
-  center: boolean;
-  isLoadingButton: boolean;
-  className: string;
-  title: ReactNode;
-  stylesTitle: object;
-  body: ReactNode;
-  size: "sm" | "lg" | "xl" | undefined;
-  onClose: () => void;
-  onSave: () => void;
-  textButtonClose: string;
-  textButtonSave: string;
-  bsStyleButtonSave: string;
-  dialogClassName: string;
-  properties: object;
-  onHide: () => void;
-  footer: ReactNode;
-  footerClassName: string;
-  headerProperties: { closeButton: boolean };
-  titleClassName: string;
-  bodyStyle: object;
-  propertyButtonClose: object;
-  propertyButtonSave: object;
+  center?: boolean;
+  isLoadingButton?: boolean;
+  className?: string;
+  title?: ReactNode;
+  stylesTitle?: object;
+  body?: ReactNode;
+  size?: "sm" | "lg" | "xl" | undefined;
+  onClose?: () => void;
+  onSave?: () => void;
+  textButtonClose?: string;
+  textButtonSave?: string;
+  bsStyleButtonSave?: string;
+  dialogClassName?: string;
+  properties?: object;
+  onHide?: () => void;
+  footer?: ReactNode;
+  footerClassName?: string;
+  headerProperties?: { closeButton: boolean };
+  titleClassName?: string;
+  bodyStyle?: object;
+  propertyButtonClose?: object;
+  propertyButtonSave?: object;
 }
 const SWSModal = (props: IModal) => {
   const {
@@ -41,23 +41,11 @@ const SWSModal = (props: IModal) => {
     className,
     properties,
     stylesTitle,
-    textButtonClose,
-    textButtonSave,
-    isLoadingButton,
     dialogClassName,
-    bsStyleButtonSave,
-    propertyButtonSave,
     footerClassName,
-    propertyButtonClose,
     headerProperties,
     titleClassName,
   } = props;
-
-  const onClick = () => {
-    if (!isLoadingButton) {
-      onSave();
-    }
-  };
 
   return (
     <Modal
@@ -73,54 +61,41 @@ const SWSModal = (props: IModal) => {
       {...properties}
     >
       {title && (
-        <Modal.Header {...headerProperties} style={{display:'flex', justifyContent:'center'}}>
+        <Modal.Header
+          {...headerProperties}
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            backgroundColor: "#3C3F4A",
+          }}
+        >
           <Modal.Title className={titleClassName} style={stylesTitle}>
             {title}
           </Modal.Title>
         </Modal.Header>
       )}
-      <Modal.Body style={bodyStyle || {}}>{body}</Modal.Body>
+      <Modal.Body
+        style={
+          bodyStyle || {
+            backgroundColor: "#2E2F47",
+            backdropFilter: "blur(90px)",
+          }
+        }
+      >
+        {body}
+      </Modal.Body>
       {!footer && !onClose && !onSave ? null : (
         <Modal.Footer
           className={
             footer && !footerClassName ? "camera-modal-footer" : footerClassName
           }
+          style={{
+            backgroundColor: "#2E2F47",
+            backdropFilter: "blur(90px)",
+            border: "none",
+          }}
         >
-          {onClose && (
-            <Button
-              variant="secondary"
-              className="btn-user-mang btn-secondary-user-mang"
-              onClick={onClose}
-              {...propertyButtonClose}
-            >
-              {textButtonClose || "cancel"}
-            </Button>
-          )}
-
-          {footer ? (
-            footer
-          ) : (
-            <Button
-              className="btn-user-mang btn-primary-user-mang"
-              variant={bsStyleButtonSave}
-              disabled={isLoadingButton}
-              onClick={onClick}
-              {...propertyButtonSave}
-            >
-              {isLoadingButton ? (
-                <span>
-                  loading...
-                  <i
-                    className="fa fa-spinner fa-spin"
-                    style={{ animation: "fa-spin 1s infinite linear" }}
-                    aria-hidden="true"
-                  ></i>
-                </span>
-              ) : (
-                textButtonSave || "save"
-              )}
-            </Button>
-          )}
+          {footer}
         </Modal.Footer>
       )}
     </Modal>

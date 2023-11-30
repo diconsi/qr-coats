@@ -1,50 +1,52 @@
 import { IClub } from "@/clube/interfaces";
-import { clubManagmentPath, registerGuestPath } from "@/constants";
-import { useFetchAndLoad, useRedirectTo } from "@/hooks";
-import { getClubById } from "@/services";
+import { clubManagmentPath } from "@/constants";
+import { useRedirectTo } from "@/hooks";
 import { setActiveClub } from "@/store/club/clubSlice";
-import { Card, CardMedia, Grid } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+import { Avatar, Card, Grid } from "@mui/material";
+import { useDispatch } from "react-redux";
 
 const ClubCard = ({ club }: { club: IClub }) => {
-  const { isAnonymous } = useSelector((store) => store.authState);
   const dispatch = useDispatch();
   const redirectTo = useRedirectTo();
 
   const handleItem = async () => {
-    const bandera = false;
-
     dispatch(setActiveClub(club));
-    bandera ? redirectTo(registerGuestPath) : redirectTo(clubManagmentPath);
+    redirectTo(clubManagmentPath);
   };
 
   return (
     <Grid
       item
-      xs={12}
-      sm={4}
+      xs={6}
+      sm={6}
       onClick={handleItem}
-      sx={{ mt: 2, display: "flex", justifyContent: "center" }}
+      sx={{
+        width: "100%",
+        height: "35%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 1
+      }}
     >
       <Card
-        variant="outlined"
         sx={{
-          backgroundColor: "primary.main",
-          height: "40vh",
-          width: "70%",
           display: "flex",
-          justifyContent: "center",
           alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          width: "90%",
+          borderRadius: "25%",
+          bgcolor:'#71718A'
         }}
       >
-        <CardMedia
-          component="img"
+        <Avatar
           src={club.icon}
           alt="Club Icon"
           sx={{
-            height: "50%",
-            width: "70%",
-            objectFit: "contain",
+            objectFit: "cover",
+            width: 100,
+            height: 100,
           }}
         />
       </Card>

@@ -32,7 +32,7 @@ export interface order {
 }
 
 export interface Order {
-  id: string;
+  _id: string;
   name: string;
   date: string;
   idAdmin: string;

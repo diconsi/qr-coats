@@ -1,130 +1,156 @@
-import { AuthLayout } from "@/auth/layout";
-import { useFetchAndLoad } from "@/hooks";
-import useForm from "@/hooks/useForm";
-import { signIn } from "@/services";
-import { GoogleLogin } from '@react-oauth/google';
-
-import { startGoogleSignIn, startLoginWithEmailPassword } from "@/store/auth";
-import { login, setErrorMessage } from "@/store/auth/authSlice";
-import Google from "@mui/icons-material/Google";
-import {
-  Alert,
-  Button,
-  Grid,
-  Link,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { FormEvent, useMemo } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { ChangeEvent, useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
+import { Alert, Grid, Link, Typography } from "@mui/material";
+import HttpsIcon from "@mui/icons-material/HttpsOutlined";
+import PersonIcon from "@mui/icons-material/PersonOutlined";
+import { AuthLayout } from "@/auth/layout";
+import { CustomButton, InputText } from "@/clube/components";
+import { resgiterPath } from "@/constants";
+import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
+import { signIn } from "@/services";
+import { login, setErrorMessage } from "@/store/auth/authSlice";
+import { stateValidator } from "@/tools";
 
-const LoginPage = () => {
-  const { status, errorMessage } = useSelector((store) => store.authState);
+interface UserData {
+  rol: string;
+}
+
+interface UserState {
+  userName: string;
+  password: string;
+  [key: string]: string;
+}
+
+const initialState: UserState = {
+  userName: "chepsito",
+  password: "123456",
+};
+
+interface ValidationRules {
+  [key: string]: (value: string) => boolean;
+}
+
+const validationRules: ValidationRules = {
+  userName: (value: string) => typeof value === "string" && value !== "",
+  password: (value: string) => typeof value === "string" && value !== "",
+};
+
+const LoginPage: React.FC = () => {
+  const dispatch = useAppDispatch();
   const { callEndpoint } = useFetchAndLoad();
+  const [userState, setUserState] = useState<UserState>(initialState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { errorMessage } = useAppSelector((store) => store.authState);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const isAuthenticating = useMemo(() => status == "checking", [status]);
-  const dispatch = useDispatch();
-  const { onInputChange, userName, password, onResetForm, formState } = useForm(
-    {
-      userName: "",
-      password: "",
+  useEffect(() => {
+    dispatch(setErrorMessage(""));
+  }, [dispatch]);
+
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    clearErrorAndMessage(name);
+    setUserState({
+      ...userState,
+      [name]: value,
+    });
+  };
+
+  const clearErrorAndMessage = (name: string) => {
+    if (errorMessage !== "") {
+      dispatch(setErrorMessage(""));
     }
-  );
 
-  const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    try {
-      const { data } = await callEndpoint(
-        signIn({ username: userName, password })
-      );
-
-      if (data && data.rol === "customer") {
-        dispatch(login(data));
-      } else {
-        dispatch(setErrorMessage({ errorMessage: "Usuario no encontrado" }));
-      }
-    } catch (error) {
-      console.error("Error durante la autenticación:", error);
-      dispatch(
-        setErrorMessage({ errorMessage: "Error durante la autenticación" })
-      );
+    if (errors[name] !== "") {
+      const newErrors = { ...errors };
+      delete newErrors[name];
+      setErrors(newErrors);
     }
   };
 
-  // const onGoogleSingIn = () => {
-  //   dispatch(startGoogleSignIn());
-  // };
+  const onSubmit = async () => {
+    const newErrors = stateValidator(userState, validationRules);
 
-  const onSuccess=(response)=>{
-    console.log(response)
-  }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      dispatch(
+        setErrorMessage({
+          errorMessage: "Please complete all fields correctly.",
+        })
+      );
+    } else {
+      setErrors({});
 
-  const onError=()=>{
-    console.log("response")
-  }
+      try {
+        const { data } = (await callEndpoint(
+          signIn({ username: userState.userName, password: userState.password })
+        )) as { data: UserData };
+        if (data && data.rol === "customer") {
+          dispatch(login(data));
+        } else {
+          dispatch(setErrorMessage({ errorMessage: "User not found" }));
+        }
+      } catch (error) {
+        dispatch(setErrorMessage({ errorMessage: "User not found" }));
+      }
+    }
+  };
 
   return (
-    <AuthLayout title="Login">
-      <form onSubmit={onSubmit}>
-        <Grid container>
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <TextField
-              label="Correo"
-              type="text"
-              placeholder="email@google.com"
-              fullWidth
-              variant="filled"
-              color="primary"
-              name="userName"
-              value={userName}
-              onChange={onInputChange}
-            />
-          </Grid>
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <TextField
-              label="Password"
-              type="password"
-              placeholder="Password"
-              fullWidth
-              variant="filled"
-              color="primary"
-              name="password"
-              value={password}
-              onChange={onInputChange}
-            />
-          </Grid>
-
-          <Grid container display={!!errorMessage ? "" : "none"} sx={{ mt: 1 }}>
-            <Grid item xs={12} md={6}>
-              <Alert severity="error">{errorMessage}</Alert>
-            </Grid>
-          </Grid>
-
-          <Grid container spacing={2} sx={{ mb: 2, mt: 1 }}>
-            <Grid item xs={12} md={6}>
-              <Button
-                disabled={isAuthenticating}
-                type="submit"
-                variant="contained"
-                fullWidth
-              >
-                Login
-              </Button>
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Button disabled={isAuthenticating} variant="contained" fullWidth>
-              <GoogleLogin onSuccess={onSuccess} onError={onError} />
-              </Button>
-            </Grid>
+    <AuthLayout title="WELCOME BACK!">
+      <Typography sx={{ mt: 4 }}>SIGN IN TO CONTINUE</Typography>
+      <Grid container>
+        <Grid item xs={12} sx={{ mt: 4 }}>
+          <InputText
+            type="text"
+            name="userName"
+            placeholder="Enter username"
+            value={userState.userName}
+            onChange={onChange}
+            error={!!errors.userName}
+            helperText={errors.userName}
+            endAdornmentIcon={<PersonIcon />}
+          />
+        </Grid>
+        <Grid item xs={12} sx={{ mt: 4 }}>
+          <InputText
+            type="password"
+            name="password"
+            placeholder="Enter password"
+            value={userState.password}
+            onChange={onChange}
+            error={!!errors.password}
+            helperText={errors.password}
+            endAdornmentIcon={<HttpsIcon />}
+            showPassword={showPassword}
+            onTogglePasswordVisibility={handleTogglePasswordVisibility}
+          />
+        </Grid>
+        <Grid container display={errorMessage ? "" : "none"} sx={{ mt: 4 }}>
+          <Grid item xs={12} md={12}>
+            <Alert severity="error">{errorMessage}</Alert>
           </Grid>
         </Grid>
-        <Grid container flexDirection="row" justifyContent="end">
-          <Link component={RouterLink} color="inherit" to="/auth/register">
-            Crear una cuenta
-          </Link>
+        <Grid container sx={{ mt:4 }}>
+          <Grid item xs={12} md={12}>
+            <CustomButton
+              className="auth-button"
+              onClick={onSubmit}
+              label={"LOGIN"}
+              fullWidth={true}
+            />
+          </Grid>
         </Grid>
-      </form>
+      </Grid>
+      <Grid container flexDirection="row" justifyContent="end" mt={4}>
+        <Link component={RouterLink} color="inherit" to={resgiterPath}>
+          CREATE YOUR ACCOUNT
+        </Link>
+      </Grid>
     </AuthLayout>
   );
 };

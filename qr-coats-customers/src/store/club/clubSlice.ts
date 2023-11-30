@@ -1,34 +1,93 @@
+import { IService } from "@/clube/pages/ClubManagment/pages/Services/components/TotalsSection";
 import { createSlice } from "@reduxjs/toolkit";
+
 const clubSlice = createSlice({
   name: "club",
   initialState: {
     clubes: [],
     receiptHistory: [],
-    activeClub: null,
-    activeReceipt: null,
-    serviceOrder: [],
+    activeClub: {
+      _id: "",
+      name: "",
+      photo: "",
+      withGateway: false,
+      customNote: "",
+      icon: "",
+      iconQrVisible: false,
+      services: [{ enable: false, id: "", name: "", price: 0, status: false }],
+      informationGuest: {
+        email: false,
+        lastName: false,
+        name: false,
+        phone: false,
+      },
+      withInformationGuest: false,
+      customFields: [{ id: "", name: "" }],
+    },
+    activeReceipt: {
+      _id: "",
+      date: "",
+      clubId: "",
+      totals: {
+        qst: "",
+        subtotal: "",
+        tip: "",
+        total: "",
+        products: [{ title: "", value: 0 }],
+      },
+    },
+    qrList: [
+      {
+        name: "",
+        email: "",
+        img: null,
+        services: {
+          id: "",
+          name: "",
+        },
+      },
+    ],
     order: [],
-    totals: {},
+    totals: {
+      total: 0,
+      subtotal: 0,
+    },
+    services: [
+      {
+        enable: true,
+        id: "",
+        name: "",
+        price: 0,
+        status: false,
+        total: 0,
+      },
+    ],
+    promotion: {
+      name: "",
+      price: 0,
+      status: false,
+    },
   },
   reducers: {
     setClubes: (state, action) => {
       state.clubes = action.payload;
     },
     setActiveClub: (state, action) => {
-      state.activeClub = action.payload;
+      state.activeClub = { ...state.activeClub, ...action.payload };
     },
     addService: (state, action) => {
-      state.serviceOrder.push(action.payload);
+      state.qrList = [...state.qrList, action.payload];
     },
     addTotals: (state, action) => {
       state.totals = action.payload;
     },
     resetServicesOrder: (state) => {
-      state.serviceOrder = [];
+      state.qrList = [];
+      state.totals = { total: 0, subtotal: 0 };
     },
     deleteServiceById: (state, action) => {
-      state.serviceOrder = state.serviceOrder.filter(
-        (service) => service.id !== action.payload
+      state.qrList = state.qrList.filter(
+        (service) => service.email !== action.payload
       );
     },
     setOrder: (state, action) => {
@@ -39,6 +98,24 @@ const clubSlice = createSlice({
     },
     setActiveReceipt: (state, action) => {
       state.activeReceipt = action.payload;
+    },
+
+    setServices: (state, action) => {
+      state.services = action.payload.services;
+      state.promotion = action.payload.promotion;
+    },
+    updateServices: (state, action) => {
+      const { id, amount } = action.payload;
+      const updatedServices = state.services.map((service: IService) => {
+        if (service.id === id) {
+          if (amount === -1 && service.total === 0) {
+            return service;
+          }
+          return { ...service, total: service.total + amount };
+        }
+        return service;
+      });
+      state.services = updatedServices;
     },
   },
 });
@@ -53,6 +130,8 @@ export const {
   addTotals,
   setReceiptHistory,
   setActiveReceipt,
+  setServices,
+  updateServices,
 } = clubSlice.actions;
 
 export default clubSlice.reducer;

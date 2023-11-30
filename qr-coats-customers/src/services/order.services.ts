@@ -9,12 +9,12 @@ export interface orderDto {
   totals: object;
 }
 
-export const ordersByIdCustomer = (idCustomer: string) => {
+export const getOrders = (creator: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get("http://localhost:3000/orders/ordersByIdCustomer", {
-      params: {
-        idCustomer,
+    call: axios.get(`http://localhost:3000/api/v1/order/getOrdersByCustomer/${creator}`, {
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
       },
       signal: controller.signal,
     }),
@@ -22,30 +22,15 @@ export const ordersByIdCustomer = (idCustomer: string) => {
   };
 };
 
-export const getOrderById = (
-  idAdmin: string,
-  idClub: string,
-  idOrder: string
-) => {
-  const controller = loadAbort();
-  return {
-    call: axios.get("http://localhost:3000/orders/getOrderById", {
-      params: {
-        idAdmin,
-        idClub,
-        idOrder,
-      },
-      signal: controller.signal,
-    }),
-    controller,
-  };
-};
 
-export const createNewOrder = (order: orderDto) => {
+export const createOrder = (accesToken: string, data: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post("http://localhost:3000/orders", order, {
+    call: axios.post("http://localhost:3000/api/v1/order", data, {
       signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
     }),
     controller,
   };

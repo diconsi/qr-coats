@@ -1,38 +1,71 @@
-import profileIcon from "@/assets/profile.jpeg";
-import { ModalComponent, TakePhotoEditor } from "@/clube/components";
+import profileIcon from "@/assets/profile.png";
+import {
+  CustomButton,
+  InputText,
+  ModalComponent,
+  TakePhotoEditor,
+} from "@/clube/components";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import {
   addService,
   deleteServiceById,
   resetServicesOrder,
 } from "@/store/club/clubSlice";
-import DeleteIcon from "@mui/icons-material/Delete";
-import EditIcon from "@mui/icons-material/Edit";
+import { stateValidator } from "@/tools";
+import CameraIcon from "@mui/icons-material/CameraAltOutlined";
+import DeleteIcon from "@mui/icons-material/HighlightOffOutlined";
 import {
   Avatar,
-  Button,
   Checkbox,
   FormControlLabel,
   FormGroup,
   Grid,
-  TextField,
   Typography,
 } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
-import { useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { v4 as uuidv4 } from "uuid";
+import { ChangeEvent, useEffect, useState } from "react";
+import { IService } from "./TotalsSection";
 
-const UserSection = ({ summary }) => {
-  const { serviceOrder } = useSelector((store) => store.clubState);
-  const [modal, setModal] = useState(false);
-  const [modalCamera, setModalCamera] = useState(false);
-  const [orderSummary, setOrderSummary] = useState([]);
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+interface IUserState {
+  name: string;
+  email: string;
+  [key: string]: string;
+}
+
+const initialState: IUserState = {
+  name: "",
+  email: "",
+};
+
+interface ValidationRules {
+  [key: string]: (value: string) => boolean;
+}
+
+interface IOrder {
+  id: string;
+  name: string;
+}
+
+const validationRules: ValidationRules = {
+  name: (value: string) => typeof value === "string" && value !== "",
+  email: (value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return typeof value === "string" && value !== "" && emailRegex.test(value);
+  },
+};
+
+const UserSection = () => {
+  const { qrList, services } = useAppSelector((store) => store.clubState);
+  const dispatch = useAppDispatch();
+
+  const [userState, setUserState] = useState<IUserState>(initialState);
+  const [modal, setModal] = useState<boolean>(false);
+  const [modalCamera, setModalCamera] = useState<boolean>(false);
+  const [orderSummary, setOrderSummary] = useState<IService[]>([]);
   const [imgURL, setImgURL] = useState<string | null>(null);
-  const [order, setOrder] = useState([]);
-
-  const dispatch = useDispatch();
+  const [order, setOrder] = useState<IOrder[]>([]);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [aux, setAux] = useState<IService[]>([]);
 
   useEffect(() => {
     dispatch(resetServicesOrder());
@@ -40,17 +73,37 @@ const UserSection = ({ summary }) => {
 
   useEffect(() => {
     updateOrderSummary();
-  }, [summary, serviceOrder]);
+  }, [services, qrList]);
+
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+
+    clearErrorAndMessage(name);
+    setUserState({
+      ...userState,
+      [name]: value,
+    });
+  };
+
+  const clearErrorAndMessage = (name: string) => {
+    if (errors[name] !== "") {
+      const newErrors = { ...errors };
+      delete newErrors[name];
+      setErrors(newErrors);
+    }
+  };
 
   const updateOrderSummary = () => {
-    const deepCopy = summary.map((item) => ({ ...item }));
-    const updateOrderSummary = deepCopy.map((s) => {
-      const allServices = serviceOrder.map((item) => item.services).flat();
-      const filterService = allServices.filter((i) => i.id === s.id);
+    const deepCopy = services.map((service: IService) => ({ ...service }));
+    const updateOrderSummary = deepCopy.map((service) => {
+      const allServices = qrList.map((item) => item.services).flat();
+      const filterService = allServices.filter(
+        (_service) => _service.id === service.id
+      );
       if (filterService.length) {
-        return { ...s, total: s.total - filterService.length };
+        return { ...service, total: service.total - filterService.length };
       } else {
-        return s;
+        return service;
       }
     });
     setAux(updateOrderSummary);
@@ -62,8 +115,8 @@ const UserSection = ({ summary }) => {
   };
 
   const clearInputs = () => {
-    setEmail("");
-    setName("");
+    setUserState(initialState);
+    setErrors({});
     setImgURL(null);
   };
 
@@ -74,48 +127,54 @@ const UserSection = ({ summary }) => {
   };
 
   const onSave = () => {
-    const id = uuidv4();
-    const newOrder = {
-      id: id,
-      name: name,
-      email: email,
-      services: order,
-      img: imgURL,
-    };
-    dispatch(addService(newOrder));
-    setModal(false);
-    setEmail("");
-    setName("");
-    setImgURL(null);
-    setOrder([]);
+    const newErrors = stateValidator(userState, validationRules);
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+    } else {
+      setErrors({});
+      const newOrder = {
+        name: userState.name,
+        email: userState.email,
+        services: order,
+        img: imgURL,
+      };
+      dispatch(addService(newOrder));
+      setModal(false);
+      setUserState(initialState);
+      setImgURL(null);
+      setOrder([]);
+    }
   };
 
-  const onPhotoCapture = (img) => {
+  const onPhotoCapture = (img: string | null) => {
     setImgURL(img);
   };
 
-  const [aux, setAux] = useState([]);
-
-  const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     const id = name;
-    const updateNewSummary = aux.map((n) => {
-      if (n.id === id) {
+    const updateNewSummary = aux.map((service) => {
+      if (service.id === id) {
         return checked
-          ? { ...n, total: (n.total -= 1) }
-          : { ...n, total: (n.total += 1) };
+          ? { ...service, total: (service.total -= 1) }
+          : { ...service, total: (service.total += 1) };
       } else {
-        return n;
+        return service;
       }
     });
 
     setAux(updateNewSummary);
 
-    const findService = orderSummary.find((s) => s.id === id);
-
+    const findService = orderSummary.find((service) => service.id === id);
     if (checked) {
-      const service = { id: findService.id, name: findService.name };
-      setOrder([...order, service]);
+      if (findService) {
+        const service = {
+          id: findService.id,
+          name: findService.name,
+        };
+        setOrder([...order, service]);
+      }
     } else {
       const filterService = order.filter((o) => o.id !== id);
       setOrder(filterService);
@@ -124,38 +183,62 @@ const UserSection = ({ summary }) => {
 
   const renderBody = () => {
     return (
-      <Grid container>
-        <TextField
-          style={{ width: "100%" }}
-          id="filled-basic"
-          label="User"
-          variant="filled"
-          name="Name"
-          color="primary"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
-        <div className="image-container-profile">
-          <img
-            src={imgURL ? imgURL : profileIcon}
-            width={250}
-            height={150}
-            alt="Imagen redonda"
+      <Grid container display={"flex"} justifyContent={"center"}>
+        <Grid item md={6} xs={12} sx={{ mb: 2 }}>
+          <InputText
+            type="text"
+            placeholder="Username"
+            name="name"
+            value={userState.name}
+            onChange={onChange}
+            error={!!errors.name}
+            helperText={errors.name}
           />
-        </div>
+        </Grid>
+        <Grid
+          item
+          md={12}
+          xs={12}
+          display={"flex"}
+          justifyContent={"center"}
+          sx={{ position: "relative" }}
+          mb={2}
+        >
+          <Avatar
+            src={imgURL || ""}
+            sx={{
+              width: 100,
+              height: 100,
+              border: "2px solid white",
+            }}
+          />
+          <IconButton
+            sx={{
+              position: "absolute",
+              top: "80%",
+              left: { md: "58%", xs: "62%" },
+              transform: "translate(-50%, -50%)",
+            }}
+            onClick={() => setModalCamera(true)}
+          >
+            <CameraIcon
+              sx={{
+                background: "#2C2D38",
+                borderRadius: "50%",
+                p: 1,
+              }}
+              fontSize="large"
+              color="info"
+            />
+          </IconButton>
+        </Grid>
         <Grid
           container
           justifyContent="center"
           alignItems="center"
           sx={{ width: "100%" }}
         >
-          <Button
-            variant="contained"
-            style={{ width: "50%" }}
-            onClick={() => setModalCamera(true)}
-          >
-            Add Selfie
-          </Button>
+          ASSIGN AN ITEM
           <Grid
             container
             justifyContent="center"
@@ -164,36 +247,56 @@ const UserSection = ({ summary }) => {
           >
             <FormGroup>
               {aux
-                .filter((s) => s.total > 0)
-                .map((s) => (
-                  <div key={s.id}>
+                .filter((service: IService) => service.total > 0)
+                .map((service: IService) => (
+                  <div key={service.id}>
                     <FormControlLabel
                       control={
                         <div>
                           <Checkbox
-                            name={s.id.toString()}
+                            sx={{ color: "white" }}
+                            name={service.id.toString()}
                             onChange={handleCheckboxChange}
                           />
                         </div>
                       }
-                      label={`${s.total} - ${s.name} `}
+                      label={`${service.total} - ${service.name} `}
                     />
                   </div>
                 ))}
             </FormGroup>
           </Grid>
-          <TextField
-            style={{ width: "100%" }}
-            id="filled-password-input"
-            label="Email"
-            type="email"
-            autoComplete="current-password"
-            variant="filled"
-            color="primary"
-            name="secret"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
+          <Grid item xs={12} md={6} mt={2} mb={2}>
+            <InputText
+              placeholder="Email"
+              name="email"
+              type="email"
+              value={userState.email}
+              onChange={onChange}
+              error={!!errors.email}
+              helperText={errors.email}
+            />
+          </Grid>
+          <span
+            style={{
+              fontSize: "10px",
+              marginTop: "10px",
+              textAlign: "center",
+            }}
+          >
+            YOUR EMAIL AND YOUR PHOTO ALLOW YOU TO RETRIEVE YOUR COAT IN CASE
+            YOUR PHONE DIES.
+          </span>
+          <span
+            style={{
+              fontSize: "10px",
+              marginTop: "10px",
+              textAlign: "center",
+            }}
+          >
+            IF YOU CHOOSE NOT TO UPLOAD A SELFIE, YOU WILL BE ASKED TO GIVE A
+            DESCRIPTION OF YOUR COAT WHEN RETRIEVING IT WITHOUT A QR CODE.
+          </span>
           <TakePhotoEditor
             titleModal={"Camera"}
             takePhotoText={"Capture"}
@@ -211,36 +314,40 @@ const UserSection = ({ summary }) => {
 
   const renderFooter = () => {
     return (
-      <Grid container spacing={2} flexDirection="row" justifyContent="end">
-        <Button onClick={onCloseModal} variant="contained">
-          Cancelar
-        </Button>
-        <Button sx={{ ml: 2 }} onClick={onSave} variant="contained">
-          Guardar
-        </Button>
+      <Grid container justifyContent={"end"}>
+        <CustomButton fullWidth={false} label="CANCEL" onClick={onCloseModal} />
+        <CustomButton
+          style={{ marginLeft: "5px" }}
+          fullWidth={false}
+          label="SAVE"
+          onClick={onSave}
+          background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+        />
       </Grid>
     );
   };
 
-  const userButtonEnabled = aux.every((item) => item.total === 0);
+  const userButtonEnabled = aux.every(
+    (service: IService) => service.total === 0
+  );
 
-  const onDeleteService = (idService) => {
-    dispatch(deleteServiceById(idService));
+  const onDeleteService = (email: string) => {
+    dispatch(deleteServiceById(email));
   };
 
   return (
-    <Grid justifyContent="center" container style={{ height: "100%" }}>
-      <Grid item display="flex" alignItems="center" style={{ height: "45%" }}>
-        <Button
-          onClick={onAddUser}
-          disabled={userButtonEnabled}
-          variant="contained"
-        >
-          Add User
-        </Button>
-      </Grid>
-      <Grid container style={{ height: "55%", overflowY: "scroll" }}>
-        {serviceOrder.map((service) => {
+    <Grid container justifyContent="center" pt={1} pb={1}>
+      {!userButtonEnabled && (
+        <Grid item display="flex" alignItems="center">
+          <CustomButton
+            className={"clube-button"}
+            label={"Generate QR"}
+            onClick={onAddUser}
+          />
+        </Grid>
+      )}
+      <Grid container>
+        {qrList.map((service, index: number) => {
           return (
             <Grid
               item
@@ -248,15 +355,18 @@ const UserSection = ({ summary }) => {
               xs={12}
               display="flex"
               justifyContent="center"
-              key={service.id}
+              key={index}
+              sx={{ mt: 2 }}
+              width={"80%"}
             >
               <Grid
                 container
                 sx={{
-                  backgroundColor: "primary.main",
-                  borderRadius: "5px",
+                  backgroundColor: "#9393AB",
+                  borderRadius: "30px",
                   margin: "0px 2px",
                   color: "white",
+                  width: "80%",
                 }}
               >
                 <Grid
@@ -264,10 +374,11 @@ const UserSection = ({ summary }) => {
                   display="flex"
                   alignItems="center"
                   md={10}
-                  xs={8}
+                  xs={10}
                   sx={{ pl: 2 }}
                 >
                   <Avatar
+                    sx={{ width: 25, height: 25 }}
                     alt="user"
                     src={service.img ? service.img : profileIcon}
                   />
@@ -277,17 +388,14 @@ const UserSection = ({ summary }) => {
                   item
                   display="flex"
                   alignItems="center"
-                  justifyContent="center"
+                  justifyContent="flex-end"
                   md={2}
-                  xs={4}
+                  xs={2}
                 >
-                  <IconButton aria-label="Editar" sx={{ color: "white" }}>
-                    <EditIcon />
-                  </IconButton>
                   <IconButton
-                    onClick={() => onDeleteService(service.id)}
+                    onClick={() => onDeleteService(service.email)}
                     aria-label="Eliminar"
-                    sx={{ color: "red" }}
+                    sx={{ color: "white" }}
                   >
                     <DeleteIcon />
                   </IconButton>

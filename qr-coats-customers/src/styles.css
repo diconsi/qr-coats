@@ -1,14 +1,15 @@
-.box-shadow {
-  box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
+@font-face {
+  font-family: "AttenBold";
+  src: url("/fonts/AttenRoundNewBold.otf") format("opentype"); /* Ruta a tu archivo de fuente */
+  font-weight: bold;
+  font-style: normal;
 }
 
-.club-image {
-  width: 90%;
-}
-
-.service-assigned-container {
-  height: 30vh !important;
-  align-items: initial !important;
+@font-face {
+  font-family: "AttenRound";
+  src: url("/fonts/AttenRoundNewRegular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
 }
 
 .image-container-profile {
@@ -33,17 +34,39 @@
 .carousel-inner {
   height: 100% !important;
 }
+
 #react-qrcode-logo {
   height: 100% !important;
   width: 45% !important;
 }
 
+.css-ezd7k3-MuiStepLabel-label,
+.css-ezd7k3-MuiStepLabel-label.Mui-active {
+  color: white !important;
+}
+.css-ezd7k3-MuiStepLabel-label {
+  text-align: center;
+  font-size: 10px !important;
+}
+
+.clube-button {
+  padding: 0px 20px;
+}
+.auth-button {
+  padding: 15px 20px !important;
+}
+
+.services-button {
+  width: 10% !important;
+}
+
+.modal-coat {
+  background-color: #b8bcfe;
+}
+
 @media (max-width: 576px) {
   .club-image {
     height: 10vh;
-  }
-  .service-assigned-container {
-    overflow-y: scroll;
   }
 
   .MuiStepLabel-root {
@@ -61,3 +84,12 @@
     width: 100% !important;
   }
 }
+
+.ejemplo {
+  border: none !important;
+}
+
+.carousel-indicators .active {
+  background-color: #b8bcfe !important;
+}
+

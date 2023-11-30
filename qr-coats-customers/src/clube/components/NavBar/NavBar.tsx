@@ -1,56 +1,26 @@
-import { FirebaseDB } from "@/firebase/config";
-import { startLogout } from "@/store/auth";
-import { setViewSidebar } from "@/store/auth/authSlice";
-import { setActiveClub, setClubes } from "@/store/club/clubSlice";
-import { LogoutOutlined, MenuOutlined } from "@mui/icons-material";
-import { AppBar, Grid, IconButton, Toolbar, Typography } from "@mui/material";
-import { collection, collectionGroup, onSnapshot, query } from "firebase/firestore";
-import { useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-const NavBar = ({ drawerWidth }) => {
-  const { isAnonymous } = useSelector(store => store.authState);
-  const { activeClub } = useSelector(store => store.clubState);
-  useEffect(() => {
-    const clubesQuery = query(collectionGroup(FirebaseDB,'clubes'));
-    const unsubscribe = onSnapshot(clubesQuery,
-      (snapShot) => {
-       try {
-        const clubesData = snapShot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        }));
-        // dispatch(setClubes(clubesData));
+import qrIcon from "@/assets/Icon-192.png";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { logout, setViewSidebar } from "@/store/auth/authSlice";
+import { MenuOutlined } from "@mui/icons-material";
+import PowerIcon from "@mui/icons-material/PowerSettingsNewOutlined";
+import { AppBar, Grid, IconButton, Toolbar } from "@mui/material";
+import { FC } from "react";
 
-        const modifiedClub = snapShot
-          .docChanges()
-          .find(
-            (change) =>
-              change.type === "modified" && change.doc.id === activeClub.id
-          );
+interface INavBar {
+  drawerWidth: number;
+}
 
-        if (modifiedClub) {
-          dispatch(
-            setActiveClub({
-              id: modifiedClub.doc.id,
-              ...modifiedClub.doc.data(),
-            })
-          );
-        }
-       } catch (error) {
-        console.log(error)
-       }
-      }
-    );
+const NavBar: FC<INavBar> = ({ drawerWidth }) => {
+  const { isAnonymous, name } = useAppSelector((store) => store.authState);
 
-    return () => unsubscribe();
-  }, []);
-  const dispatch = useDispatch();
-  const onLogout = () => {
-    dispatch(startLogout());
-  };
+  const dispatch = useAppDispatch();
 
   const onSidebar = () => {
     dispatch(setViewSidebar());
+  };
+
+  const onLogout = () => {
+    dispatch(logout({}));
   };
 
   return (
@@ -59,13 +29,19 @@ const NavBar = ({ drawerWidth }) => {
       sx={{
         width: "100%",
         ml: `${drawerWidth}px)`,
-        height: "10vh",
+        height: "8vh",
+        bgcolor:'transparent',
+        backdropFilter: "blur(99px)",
       }}
     >
       <Toolbar>
-        {!isAnonymous && (
+        {!isAnonymous ? (
           <IconButton onClick={onSidebar} color="inherit" sx={{ mr: 2 }}>
             <MenuOutlined />
+          </IconButton>
+        ) : (
+          <IconButton onClick={onLogout}>
+            <PowerIcon fontSize="large" sx={{ color: "white" }} />
           </IconButton>
         )}
         <Grid
@@ -73,19 +49,12 @@ const NavBar = ({ drawerWidth }) => {
           flexDirection="row"
           justifyContent="space-between"
           alignItems="center"
+          sx={{ position: "relative" }}
         >
-          <Typography variant="h6" textAlign="center" noWrap component="div">
-            QR COATS CUSTOMERS
-          </Typography>
-          <Typography
-            variant="h6"
-            textAlign="center"
-            noWrap
-            component="div"
-          ></Typography>
-          <IconButton color="error" onClick={onLogout}>
-            <LogoutOutlined />
-          </IconButton>
+          <span>WELCOME{isAnonymous ? "" : `  ${name.toUpperCase()}`}</span>
+          <div style={{ display: "flex", alignItems: "center" }}>
+            <img src={qrIcon} style={{ border: "none", height: "10vh" }} />
+          </div>
         </Grid>
       </Toolbar>
     </AppBar>

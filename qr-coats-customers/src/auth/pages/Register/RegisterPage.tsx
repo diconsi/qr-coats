@@ -1,137 +1,181 @@
-import {
-  Grid,
-  Typography,
-  TextField,
-  Button,
-  Link,
-  Alert,
-} from "@mui/material";
-import { Link as RouterLink } from "react-router-dom";
 import { AuthLayout } from "@/auth/layout";
-import useForm from "@/hooks/useForm";
-import { useMemo, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { startCreatingUserWithEmailPassword } from "@/store/auth";
-import { useFetchAndLoad } from "@/hooks";
+import { CustomButton, InputText } from "@/clube/components";
+import { loginPath } from "@/constants";
+import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
+import { setErrorMessage } from "@/store/auth/authSlice";
+import { stateValidator } from "@/tools";
+import WritingIcon from "@mui/icons-material/DriveFileRenameOutline";
+import HttpsIcon from "@mui/icons-material/HttpsOutlined";
+import PersonIcon from "@mui/icons-material/PersonOutlined";
+import EmailIcon from "@mui/icons-material/EmailOutlined";
+import { Alert, Grid, Link } from "@mui/material";
+import { ChangeEvent, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import { signUp } from "@/services";
-const initialForm = {
+
+interface IUser {
+  name: string;
+  userName: string;
+  email: string;
+  password: string;
+  [key: string]: string;
+}
+
+const initialState: IUser = {
   name: "",
-  username: "",
+  userName: "",
   email: "",
   password: "",
 };
 
+interface ValidationRules {
+  [key: string]: (value: string) => boolean;
+}
+
+const validationRules: ValidationRules = {
+  name: (value: string) => typeof value === "string" && value !== "",
+  userName: (value: string) => typeof value === "string" && value !== "",
+  email: (value: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return typeof value === "string" && value !== "" && emailRegex.test(value);
+  },
+  password: (value: string) => typeof value === "string" && value !== "",
+};
+
 const RegisterPage = () => {
-  const dispatch = useDispatch();
+  const dispatch = useAppDispatch();
   const { callEndpoint } = useFetchAndLoad();
-  const { status, errorMessage } = useSelector((store) => store.authState);
-  const isCheckingAuthentication = useMemo(
-    () => status === "checking",
-    [status]
-  );
-  const [formSubmitted, setFormSubmitted] = useState(false);
-  const {
-    formState,
-    onInputChange,
-    onResetForm,
-    name,
-    username,
-    email,
-    password,
-  } = useForm(initialForm);
+  const [userState, setUserState] = useState(initialState);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const { errorMessage } = useAppSelector((store) => store.authState);
+  const [showPassword, setShowPassword] = useState(false);
 
-  const onSubmit = async (event: FormEvent) => {
-    event.preventDefault();
-    const newUser = {
-      name,
-      username,
-      email,
-      password,
-      rol: "customer",
-    };
-    const resp = await callEndpoint(signUp(newUser));
-    console.log(resp);
+  const handleTogglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
   };
-  return (
-    <AuthLayout title="Register">
-      <form onSubmit={onSubmit}>
-        <Grid container>
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <TextField
-              label="Nombre completo"
-              type="text"
-              placeholder="Nombre completo"
-              fullWidth
-              variant="filled"
-              color="primary"
-              name="name"
-              value={name}
-              onChange={onInputChange}
-            />
-          </Grid>
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <TextField
-              label="Username"
-              type="text"
-              placeholder="Username"
-              fullWidth
-              variant="filled"
-              color="primary"
-              name="username"
-              value={username}
-              onChange={onInputChange}
-            />
-          </Grid>
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <TextField
-              label="Email"
-              type="email"
-              placeholder="email@google.com"
-              fullWidth
-              variant="filled"
-              color="primary"
-              name="email"
-              value={email}
-              onChange={onInputChange}
-            />
-          </Grid>
-          <Grid item xs={12} sx={{ mt: 2 }}>
-            <TextField
-              label="Password"
-              type="password"
-              placeholder="Password"
-              fullWidth
-              variant="filled"
-              color="primary"
-              name="password"
-              value={password}
-              onChange={onInputChange}
-            />
-          </Grid>
 
-          <Grid container spacing={2} sx={{ mb: 2, mt: 1 }}>
-            {/* <Grid display={!!errorMessage ? "" : "none"} item xs={12} md={6}>
-              <Alert severity="error">{errorMessage}</Alert>
-            </Grid> */}
-            <Grid item xs={12} md={6}>
-              <Button
-                disabled={isCheckingAuthentication}
-                type="submit"
-                variant="contained"
-                fullWidth
-              >
-                Crear cuenta
-              </Button>
-            </Grid>
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    if (errorMessage !== "") dispatch(setErrorMessage(""));
+
+    if (errors[name] !== "") delete errors[name];
+    setUserState({
+      ...userState,
+      [name]: value,
+    });
+  };
+
+  const onSubmit = async () => {
+    const newErrors = stateValidator(userState, validationRules);
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      dispatch(
+        setErrorMessage({
+          errorMessage: "Please complete all fields correctly.",
+        })
+      );
+    } else {
+      setErrors({});
+      try {
+        const newUser = {
+          name: userState.name,
+          username: userState.userName,
+          email: userState.email,
+          password: userState.password,
+          rol: "customer",
+          isAnonymous: false,
+        };
+        const { data } = await callEndpoint(signUp(newUser));
+        console.log(data);
+      } catch (error) {
+        dispatch(
+          setErrorMessage({ errorMessage: "Error during registration" })
+        );
+      }
+    }
+  };
+
+  return (
+    <AuthLayout title="REGISTER">
+      <Grid
+        container
+        display={"flex"}
+        justifyContent={"center"}
+        alignItems={"center"}
+      >
+        <Grid item xs={12} md={12} mt={2}>
+          <InputText
+            type="text"
+            name="name"
+            placeholder="Enter full name"
+            value={userState.name}
+            onChange={onChange}
+            error={!!errors.name}
+            helperText={errors.name}
+            endAdornmentIcon={<WritingIcon />}
+          />
+        </Grid>
+        <Grid item xs={12} md={12} mt={2}>
+          <InputText
+            type="text"
+            name="userName"
+            placeholder="Enter username"
+            value={userState.userName}
+            onChange={onChange}
+            error={!!errors.userName}
+            helperText={errors.userName}
+            endAdornmentIcon={<PersonIcon />}
+          />
+        </Grid>
+        <Grid item xs={12} md={12} mt={2}>
+          <InputText
+            type="email"
+            name="email"
+            placeholder="Enter email"
+            value={userState.email}
+            onChange={onChange}
+            error={!!errors.email}
+            helperText={errors.email}
+            endAdornmentIcon={<EmailIcon />}
+          />
+        </Grid>
+        <Grid item xs={12} md={12} mt={2}>
+          <InputText
+            type="password"
+            name="password"
+            placeholder="Enter password"
+            value={userState.password}
+            onChange={onChange}
+            error={!!errors.password}
+            helperText={errors.password}
+            endAdornmentIcon={<HttpsIcon />}
+            showPassword={showPassword}
+            onTogglePasswordVisibility={handleTogglePasswordVisibility}
+          />
+        </Grid>
+        <Grid container display={errorMessage ? "" : "none"} sx={{ mt: 2 }}>
+          <Grid item xs={12} md={12}>
+            <Alert severity="error">{errorMessage}</Alert>
           </Grid>
         </Grid>
-        <Grid container flexDirection="row" justifyContent="end">
-          <Typography sx={{ mr: 1 }}>¿Ya tienes cuenta ?</Typography>
-          <Link component={RouterLink} color="inherit" to="/auth/login">
-            Ingresar
+        <Grid container mt={2}>
+          <Grid item xs={12} md={12}>
+            <CustomButton
+              onClick={onSubmit}
+              label={"Sign up"}
+              fullWidth={true}
+            />
+          </Grid>
+        </Grid>
+        <Grid container mt={2} flexDirection="row" justifyContent="end">
+          <span style={{ fontWeight: "normal", fontSize: "14px", marginRight:'5px' }}>
+            DO YOU ALREADY HAVE AN ACCOUNT?
+          </span>
+          <Link component={RouterLink}  style={{ color: "white", textDecoration: "none" }} to={loginPath}>
+            LOG IN
           </Link>
         </Grid>
-      </form>
+      </Grid>
     </AuthLayout>
   );
 };

@@ -1,67 +1,51 @@
 import { tableHistoryPath } from "@/constants";
-import { Order } from "@/helepers";
-import { useFetchAndLoad, useRedirectTo } from "@/hooks";
-import { getOrderById } from "@/services/order.services";
+import { useAppDispatch, useRedirectTo } from "@/hooks";
 import { setActiveReceipt } from "@/store/club/clubSlice";
 import { formattedDate } from "@/tools";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
-import { Card, Grid, IconButton } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { Grid, IconButton } from "@mui/material";
+import { IReceipt } from "../ReceiptHistory";
 
-interface CardReceiptProps {
-  receipt: Order;
-}
-
-const CardReceipt = ({ receipt }: CardReceiptProps) => {
+const CardReceipt = ({ receipt }: { receipt: IReceipt }) => {
   const redirectTo = useRedirectTo();
-  const dispatch = useDispatch();
-  const { callEndpoint } = useFetchAndLoad();
-  const { idAdmin, idClub, idOrder, date, total } = receipt;
+  const dispatch = useAppDispatch();
+  const {
+    date,
+    totals: { total },
+  } = receipt;
   const handleClickHistory = async () => {
-    const { data } = await callEndpoint(getOrderById(idAdmin, idClub, idOrder));
-    console.log(data);
-    dispatch(setActiveReceipt(data));
+    dispatch(setActiveReceipt(receipt));
     redirectTo(tableHistoryPath);
   };
   return (
     <Grid
-      sx={{ width: "100%", height: "20%", p: 5 }}
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
+      sx={{
+        mt: 2,
+        width: { md: "60%", xs: "100%" },
+        height: "15vh",
+        textAlign: "center",
+        color: "white",
+        fontWeight: "bold",
+        borderRadius: 8,
+        border: "2px solid #B8BCFE",
+      }}
       item
       md={12}
+      xs={12}
     >
-      <Card
-        sx={{
-          width: "60%",
-          boxShadow: 0,
-          textAlign: "center",
-          bgcolor: "primary.main",
-          py: 5,
-          color: "white",
-          fontWeight: "bold",
-        }}
-      >
-        <Grid
-          container
-          display="flex"
-          justifyContent="center"
-          alignItems="center"
-        >
-          <Grid item md={5}>
-            {formattedDate(date)}
-          </Grid>
-          <Grid item md={5}>
-            ${total} USD
-          </Grid>
-          <Grid item md={2}>
-            <IconButton onClick={handleClickHistory} sx={{ color: "white" }}>
-              <VisibilityOutlinedIcon fontSize="large" />
-            </IconButton>
-          </Grid>
+      <Grid container width={"100%"} height={"100%"}>
+        <Grid item xs={12} md={5}>
+          {formattedDate(date)}
         </Grid>
-      </Card>
+        <Grid item xs={12} md={5}>
+          ${total} USD
+        </Grid>
+        <Grid item xs={12} md={2}>
+          <IconButton sx={{ color: "#B8BCFE" }} onClick={handleClickHistory}>
+            <VisibilityOutlinedIcon fontSize="large" />
+          </IconButton>
+        </Grid>
+      </Grid>
     </Grid>
   );
 };

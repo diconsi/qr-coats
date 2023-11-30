@@ -1,16 +1,15 @@
 import { ClubeLayout } from "@/clube/layout";
-import { userCardsPath, userDataPath } from "@/constants";
+import { userDataPath } from "@/constants";
 import { useRedirectTo } from "@/hooks";
-import AddCardOutlinedIcon from "@mui/icons-material/AddCardOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import FaceRetouchingNaturalOutlinedIcon from "@mui/icons-material/FaceRetouchingNaturalOutlined";
-import { Grid, Icon, IconButton, Typography } from "@mui/material";
+import { Grid, Icon, IconButton } from "@mui/material";
 
 const Profile = () => {
   const redirectTo = useRedirectTo();
 
-  const handleEdit = (path: string) => {
-    redirectTo(path);
+  const handleEdit = () => {
+    redirectTo(userDataPath);
   };
 
   return (
@@ -22,45 +21,50 @@ const Profile = () => {
         display="flex"
         justifyContent="center"
         alignItems="center"
-        sx={{ padding: "2%", background: "#EDEDED" }}
+        sx={{ padding: "2%", backgroundColor: "primary.main" }}
       >
         <Grid
           container
-          width="50%"
-          bgcolor={"white"}
-          sx={{ borderRadius: "6px", p: 5 }}
+          width={{ md: "50%", xs: "100%" }}
+          bgcolor={"secondary.main"}
+          borderRadius={8}
+          sx={{ p: 5, border: "2px solid #B8BCFE" }}
         >
-          <Grid item md={8}>
-            <Grid container>
-              <Grid item md={2}>
-                <Icon sx={{ width: "50px", height: "50px" }}>
+          <Grid item xs={10} md={8}>
+            <Grid container width={"100%"}>
+              <Grid
+                display={"flex"}
+                alignItems={"center"}
+                justifyContent={"flex-start"}
+                item
+                xs={2}
+                md={2}
+              >
+                <Icon
+                  sx={{
+                    width: { md: "50px", xs: "30px" },
+                    height: { md: "50px", xs: "30px" },
+                    color: "#B8BCFE",
+                  }}
+                >
                   <FaceRetouchingNaturalOutlinedIcon />
                 </Icon>
               </Grid>
-              <Grid item md={10}>
-                <Typography variant="h6"> Datos Personales</Typography>
+              <Grid
+                item
+                display={"flex"}
+                alignItems={"center"}
+                justifyContent={"center"}
+                textAlign={"center"}
+                xs={10}
+                md={10}
+              >
+                PERSONAL INFORMATION
               </Grid>
             </Grid>
           </Grid>
-          <Grid item md={4} display="flex" justifyContent="flex-end">
-            <IconButton onClick={() => handleEdit(userDataPath)}>
-              <EditOutlinedIcon />
-            </IconButton>
-          </Grid>
-          <Grid item md={8}>
-            <Grid container>
-              <Grid item md={2}>
-                <Icon sx={{ width: "50px", height: "50px" }}>
-                  <AddCardOutlinedIcon />
-                </Icon>
-              </Grid>
-              <Grid item md={10}>
-                <Typography variant="h6"> Tarjetas</Typography>
-              </Grid>
-            </Grid>
-          </Grid>
-          <Grid item md={4} display="flex" justifyContent="flex-end">
-            <IconButton onClick={() => handleEdit(userCardsPath)}>
+          <Grid item xs={2} md={4} display="flex" justifyContent="flex-end">
+            <IconButton sx={{ color: "#B8BCFE" }} onClick={handleEdit}>
               <EditOutlinedIcon />
             </IconButton>
           </Grid>

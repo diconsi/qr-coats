@@ -1,7 +1,9 @@
 import { ThemeProvider } from "@emotion/react";
 import { CssBaseline } from "@mui/material";
 import { theme } from ".";
-const AppTheme = ({ children }) => {
+import { IChildren } from "@/models";
+import { FC } from "react";
+const AppTheme: FC<IChildren> = ({ children }) => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

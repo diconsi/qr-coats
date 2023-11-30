@@ -1,27 +1,40 @@
 import { createSlice } from "@reduxjs/toolkit";
+interface AuthState {
+  status: "checking" | "not-authenticated" | "authenticated";
+  access_token: string;
+  uid: string;
+  email: string;
+  userName: string;
+  isAnonymous: boolean | null;
+  photoURL: string;
+  errorMessage: string;
+  openSidebar: boolean;
+  id: string;
+  name: string;
+  lastName: string;
+  nationality: string;
+  phone: string;
+  birthDate: string;
+}
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    status: "checking", // 'checking', 'not-authenticated', 'authenticated'
-    access_token: null,
-    uid: null,
-    email: null,
-    userName: null,
+    status: "not-authenticated", // 'checking', 'not-authenticated', 'authenticated'
+    access_token: "",
+    uid: "",
+    email: "",
+    userName: "",
     isAnonymous: null,
-    photoURL: null,
-    errorMessage: null,
+    photoURL: "",
+    errorMessage: "",
     openSidebar: false,
-    id: null,
-    name: null,
-    lastName: null,
-    nationality: null,
-    phone: null,
-    birthDate: null,
-    nameCard: null,
-    cardNumber: null,
-    expireDate: null,
-    cvv: null,
-  },
+    id: "",
+    name: "",
+    lastName: "",
+    nationality: "",
+    phone: "",
+    birthDate: "",
+  } as AuthState,
   reducers: {
     login: (state, { payload }) => {
       state.status = "authenticated";
@@ -30,16 +43,19 @@ const authSlice = createSlice({
       state.email = payload.email;
       state.userName = payload.userName;
       state.name = payload.name;
-      // state.photoURL = payload.photoURL;
-      // state.isAnonymous = payload.isAnonymous;
-      state.errorMessage = null;
+      state.photoURL = payload.photoURL;
+      state.phone = payload.phone;
+      state.birthDate = payload.birthDate;
+      state.nationality = payload.nationality;
+      state.isAnonymous = payload.isAnonymous;
+      state.errorMessage = "";
     },
     logout: (state, { payload }) => {
       state.status = "not-authenticated";
-      state.access_token = null;
-      state.uid = null;
-      state.email = null;
-      state.userName = null;
+      state.access_token = "";
+      state.uid = "";
+      state.email = "";
+      state.userName = "";
       state.errorMessage = payload?.errorMessage;
     },
     checkingCredentials: (state) => {
@@ -49,20 +65,12 @@ const authSlice = createSlice({
       state.openSidebar = !state.openSidebar;
     },
     updateProfile: (state, { payload }) => {
-      state.id = payload.id;
       state.name = payload.name;
+      state.email = payload.email;
       state.birthDate = payload.birthDate;
-      state.lastName = payload.lastName;
       state.nationality = payload.nationality;
       state.phone = payload.phone;
-      state.photoURL = payload.photo;
-      state.nameCard = payload.nameCard;
-      state.cardNumber = payload.cardNumber;
-      state.cvv = payload.cvv;
-      state.expireDate = payload.expireDate;
-    },
-    setCard: (state, { payload }) => {
-      state.nameCard = payload.nameCard;
+      state.photoURL = payload.photoURL;
     },
     setErrorMessage: (state, { payload }) => {
       state.errorMessage = payload.errorMessage;
@@ -76,7 +84,6 @@ export const {
   checkingCredentials,
   setViewSidebar,
   updateProfile,
-  setCard,
   setErrorMessage,
 } = authSlice.actions;
 

@@ -1,60 +1,67 @@
-import { ModalComponent } from "@/clube/components";
-import {
-  Alert,
-  Button,
-  Grid,
-  Paper,
-  TextField,
-  Typography,
-} from "@mui/material";
-import { useState } from "react";
+import { CustomButton, InputText, ModalComponent } from "@/clube/components";
+import { useAppSelector } from "@/hooks";
+import { Fab, Grid, Typography } from "@mui/material";
+import { ChangeEvent, useState } from "react";
 import ShoppingTable from "./ShoppingTable";
 
-const TotalsSection = ({ summary,promotion }) => {
-  const [decimalValue, setDecimalValue] = useState("");
+export interface IService {
+  enable: boolean;
+  id: string;
+  name: string;
+  price: number;
+  status: boolean;
+  total: number;
+}
+
+const TotalsSection = () => {
+  const { services, promotion, totals } = useAppSelector(
+    (store) => store.clubState
+  );
+  const [decimalValue, setDecimalValue] = useState(0.0);
   const [showModal, setShowModal] = useState(false);
   const [tipPercentage, setTipPercentage] = useState(0.1);
+  const [value, setValue] = useState(0.0);
 
-  const isVisibleTable = summary.some((service) => service.total !== 0);
+  const isVisibleTable = services.some(
+    (service: IService) => service.total !== 0
+  );
 
-  const handleDecimalChange = (event) => {
-    const value = event.target.value;
-    if (/^\d*\.?\d*$/.test(value) || value === "") {
-      setDecimalValue(value);
+  const handleDecimalChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const value: string = event.target.value;
+    if (/^\d*\.?\d*$/.test(value) || value === "0") {
+      setValue(parseFloat(value));
     }
   };
 
-  const handleTipClick = (percentage) => {
-    setDecimalValue("");
+  const handleTipClick = (percentage: number) => {
+    setDecimalValue(0.0);
     setTipPercentage(percentage);
   };
 
   const onCloseModal = () => {
     setShowModal(false);
-    setDecimalValue("");
+    setDecimalValue(0.0);
     setTipPercentage(0.1);
   };
 
   const onSave = () => {
-    if (decimalValue !== "") setShowModal(false);
+    setDecimalValue(value);
+    setShowModal(false);
   };
+
   const onClickEdit = () => {
-    setDecimalValue("");
+    setDecimalValue(0.0);
     setTipPercentage(0);
     setShowModal(true);
   };
 
   const renderBody = () => {
     return (
-      <TextField
-        label="Tip"
-        type="text"
-        placeholder="Tip"
-        fullWidth
-        variant="filled"
-        color="primary"
+      <InputText
+        type="number"
+        placeholder="Enter Tip"
         name="tip"
-        value={decimalValue}
+        value={value}
         onChange={handleDecimalChange}
       />
     );
@@ -62,92 +69,109 @@ const TotalsSection = ({ summary,promotion }) => {
 
   const renderFooter = () => {
     return (
-      <div style={{ display: "flex", gap: "10px" }}>
-        <Button variant="contained" onClick={onCloseModal}>
-          Cancel
-        </Button>
-        <Button
-          disabled={decimalValue === ""}
-          variant="contained"
+      <Grid container justifyContent={"end"}>
+        <CustomButton fullWidth={false} label="CANCEL" onClick={onCloseModal} />
+        <CustomButton
+          style={{ marginLeft: "5px" }}
+          fullWidth={false}
+          label="OK"
           onClick={onSave}
-        >
-          Ok
-        </Button>
-      </div>
+          disabled={value === 0.0}
+          background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+        />
+      </Grid>
     );
   };
 
   return (
-    <Grid item xs={12} md={6} sx={{ height: "75%" }}>
-      <Paper elevation={2} sx={{ height: "100%" }}>
-        {isVisibleTable ? (
-          <>
-            <Grid container justifyContent="center" sx={{ height: "5%" }}>
-              <Typography>Select a Tip</Typography>
-            </Grid>
-            <Grid
-              container
-              alignItems="center"
-              style={{
-                height: "15%",
-              }}
-            >
-              {[0.1, 0.15, 0.2].map((percentage, index) => (
-                <Grid
-                  item
-                  justifyContent="center"
-                  sx={{ pl: 2, pr: 2 }}
-                  xs={3}
-                  md={3}
-                  key={index}
-                >
-                  <Button
-                    onClick={() => handleTipClick(percentage)}
-                    variant="contained"
-                    fullWidth
-                  >
-                    {`${percentage * 100}%`}
-                  </Button>
-                </Grid>
-              ))}
-              <Grid item sx={{ pl: 2, pr: 2 }} xs={3} md={3}>
-                <Button
-                  onClick={onClickEdit}
-                  fullWidth
-                  variant="contained"
-                  style={{ textAlign: "center" }}
-                >
-                  Edit
-                </Button>
-              </Grid>
-            </Grid>
-            <ModalComponent
-              center
-              showModal={showModal}
-              onHide={onCloseModal}
-              body={renderBody()}
-              footer={renderFooter()}
-            />
-            <ShoppingTable
-              summary={summary}
-              promotion={promotion}
-              tipPercentage={tipPercentage}
-              decimalValue={decimalValue}
-            />
-          </>
-        ) : (
+    <Grid item xs={12} md={6}>
+      {isVisibleTable && (
+        <Grid container display={"flex"} justifyContent={"center"}>
+          <Grid container justifyContent="center" sx={{ mb: 2, mt: 2 }}>
+            <Typography>LEAVE A TIP</Typography>
+          </Grid>
           <Grid
             container
-            justifyContent="center"
             alignItems="center"
-            sx={{ height: "100%" }}
+            sx={{
+              pb: 3,
+              width: "80%",
+            }}
           >
-            <Alert severity="error" variant="filled">
-              <Typography>TAP ON ANY ITEM TO ADD IT TO YOUR ORDER.</Typography>
-            </Alert>
+            {[0.1, 0.15, 0.2].map((percentage) => (
+              <Grid
+                item
+                display={"flex"}
+                justifyContent="center"
+                xs={3}
+                md={3}
+                key={percentage}
+              >
+                <Fab
+                  size="large"
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    padding: 4,
+                    color: "white",
+                    bgcolor: "#656581",
+                    "&:active": {
+                      bgcolor: "#D5E7FF",
+                      color: "black",
+                    },
+                    "&:hover": {
+                      bgcolor: "#D5E7FF",
+                      color: "black",
+                    },
+                  }}
+                  onClick={() => handleTipClick(percentage)}
+                >
+                  <Typography display="block" variant="h6">{`${
+                    percentage * 100
+                  }%`}</Typography>
+                  <Typography display="block" variant="caption">
+                    ${totals.subtotal * percentage}
+                  </Typography>
+                </Fab>
+              </Grid>
+            ))}
+            <Grid item xs={3} md={3}>
+              <Fab
+                sx={{
+                  padding: 4,
+                  color: "white",
+                  bgcolor: "#656581",
+                  fontSize: "20px",
+                  "&:active": {
+                    bgcolor: "#D5E7FF",
+                    color: "black",
+                  },
+                  "&:hover": {
+                    bgcolor: "#D5E7FF",
+                    color: "black",
+                  },
+                }}
+                onClick={onClickEdit}
+              >
+                EDIT
+              </Fab>
+            </Grid>
           </Grid>
-        )}
-      </Paper>
+          <ShoppingTable
+            promotion={promotion}
+            tipPercentage={tipPercentage}
+            decimalValue={decimalValue}
+          />
+          <ModalComponent
+            center
+            showModal={showModal}
+            onHide={onCloseModal}
+            body={renderBody()}
+            footer={renderFooter()}
+          />
+        </Grid>
+      )}
     </Grid>
   );
 };

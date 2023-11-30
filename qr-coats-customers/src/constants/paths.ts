@@ -7,5 +7,4 @@ export const registerGuestPath = "/registerGuest";
 export const receiptHistoryPath = "/receiptHistory";
 export const profilePath = "/profile";
 export const userDataPath = "/userData";
-export const userCardsPath = "/userCards";
 export const tableHistoryPath = "/receipt";

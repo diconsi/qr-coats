@@ -1,99 +1,162 @@
-import { Alert, Button, Grid, Paper, Typography } from "@mui/material";
-import { Dispatch, SetStateAction } from "react";
-import { ISummary } from "../Services";
+import { CustomButton } from "@/clube/components";
+import { useAppSelector } from "@/hooks";
+import { updateServices } from "@/store/club/clubSlice";
+import IconCoat from "@mui/icons-material/CheckroomOutlined";
+import AccesIcon from "@mui/icons-material/LocalActivityOutlined";
+import {
+  Alert,
+  ButtonGroup,
+  Grid,
+  IconButton,
+  Typography,
+} from "@mui/material";
 
-interface IservicesSection {
-  summary: ISummary[];
-  setSummary: Dispatch<SetStateAction<ISummary[]>>;
-  promotion: { name: string; price: number; status: boolean };
+import ErrorIcon from "@mui/icons-material/ErrorOutlineOutlined";
+
+import { useDispatch } from "react-redux";
+
+interface IService {
+  enable: boolean;
+  id: string;
+  name: string;
+  price: number;
+  status: boolean;
+  total: number;
 }
 
-const ServicesSection = ({
-  summary,
-  setSummary,
-  promotion,
-}: IservicesSection) => {
+const ServicesSection = () => {
+  const dispatch = useDispatch();
+  const { services, promotion, activeClub } = useAppSelector(
+    (store) => store.clubState
+  );
   const { name, price, status } = promotion;
-  const handleServiceChange = (serviceId: number, changeAction: number) => {
-    const updatedSummary = summary.map((item) => {
-      if (item.id === serviceId) {
-        const updatedTotal = item.total + changeAction;
-        return updatedTotal >= 0 ? { ...item, total: updatedTotal } : null;
-      }
-      return item;
-    });
 
-    setSummary(updatedSummary.filter((item) => item.total >= 0));
+  const handleServiceChange = (serviceId: string, changeAction: number) => {
+    dispatch(updateServices({ id: serviceId, amount: changeAction }));
   };
+
   return (
-    <Grid item xs={12} md={6} sx={{ height: "75%" }}>
-      <Paper elevation={2} sx={{ height: "100%" }}>
-        {summary
-          .map((item) => (
-            <Grid
-              key={item.id}
-              container
-              alignItems="center"
-              sx={{ height: "25%" }}
-            >
-              <Grid
-                item
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                xs={6}
-                md={6}
-              >
-                <img src={item.icon} width={50} height={50} />
-                <Typography sx={{ ml: 1 }}>
-                  {item.name} ${item.price}
-                </Typography>
-              </Grid>
-              <Grid
-                item
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                xs={6}
-                md={6}
-              >
-                <Button
-                  onClick={() => handleServiceChange(item.id, 1)}
-                  variant="contained"
+    <Grid item xs={12} md={6}>
+      <Grid container justifyContent={"center"} alignItems="center" mb={2}>
+        <Alert
+          variant="filled"
+          sx={{
+            color: "#2B2E3A",
+            display: status ? "" : "none",
+            borderRadius: "30px",
+            fontSize: "10PX",
+            bgcolor: "#D5E7FF",
+            alignItems: "center",
+          }}
+        >
+          WE HAVE THE COMBO PROMOTION
+          <span style={{ marginLeft: "2px" }}>
+            {name} = ${price}
+          </span>
+        </Alert>
+      </Grid>
+      {services
+        .filter((item: IService) => item.status)
+        .map((item: IService) => (
+          <Grid key={item.id} container alignItems="center" mb={2}>
+            <Grid item xs={8} md={6}>
+              <Grid container>
+                <Grid
+                  item
+                  xs={4}
+                  display={"flex"}
+                  alignItems={"center"}
+                  justifyContent={"center"}
                 >
-                  +
-                </Button>
-                {item.total}
-                <Button
-                  onClick={() => handleServiceChange(item.id, -1)}
-                  variant="contained"
-                >
-                  -
-                </Button>
+                  <IconButton
+                    size="large"
+                    sx={{
+                      bgcolor: "#656581",
+                      color: "white",
+                    }}
+                    disableRipple
+                  >
+                    {item.name.toUpperCase() === "COAT" ? (
+                      <IconCoat />
+                    ) : (
+                      <AccesIcon />
+                    )}
+                  </IconButton>
+                </Grid>
+                <Grid item xs={8}>
+                  <div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "end",
+                      }}
+                    >
+                      {item.name.toUpperCase()}
+                    </div>
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "start",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ${item.price}{" "}
+                      <span style={{ marginLeft: "5px", fontSize: "8px" }}>
+                        {" "}
+                        +TAX
+                      </span>
+                    </div>
+                  </div>
+                </Grid>
               </Grid>
             </Grid>
-          ))
-          .filter((item) => item.id !== "0003")}
-        <Grid
-          container
-          alignItems="center"
-          justifyContent="center"
-          sx={{ height: "50%" }}
+            <Grid
+              item
+              display="flex"
+              alignItems="center"
+              justifyContent="center"
+              xs={4}
+              md={6}
+            >
+              <ButtonGroup
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  bgcolor: "#656581",
+                  borderRadius: "30px",
+                }}
+              >
+                <CustomButton
+                  label="-"
+                  onClick={() => handleServiceChange(item.id, -1)}
+                  style={{ border: "none", borderRadius: "30px" }}
+                />
+                <Typography>{item.total}</Typography>
+                <CustomButton
+                  label={"+"}
+                  onClick={() => handleServiceChange(item.id, 1)}
+                  style={{ border: "none", borderRadius: "30px" }}
+                />
+              </ButtonGroup>
+            </Grid>
+          </Grid>
+        ))}
+      <Grid container justifyContent={"center"} alignItems="center">
+        <Alert
+          icon={<ErrorIcon sx={{ color: "black" }} />}
+          sx={{
+            display: activeClub.customNote !== "" ? "" : "none",
+            borderRadius: "30px",
+            bgcolor: "#D5E7FF",
+            color: "#2B2E3A",
+            fontSize: "10PX",
+            alignItems: "center",
+          }}
         >
-          <Alert
-            variant="filled"
-            sx={{ display: status ? "" : "none" }}
-            severity="info"
-          >
-            <Typography textAlign="center">
-              We have the combo promotion
-            </Typography>
-            <Typography textAlign="center" variant="h6">
-              {name} = ${price}
-            </Typography>
-          </Alert>
-        </Grid>
-      </Paper>
+          {activeClub.customNote.toUpperCase()}
+        </Alert>
+      </Grid>
     </Grid>
   );
 };

@@ -1,25 +1,55 @@
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import { addTotals } from "@/store/club/clubSlice";
-import {
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-} from "@mui/material";
-import { useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { Grid } from "@mui/material";
+import { FC, useEffect } from "react";
+import { IService } from "./TotalsSection";
+interface RowElement {
+  title: string;
+  value: string | number;
+}
 
-const calculateTotalTax = (summary) => {
-  return summary.reduce((sum, item) => sum + item.tax * item.total, 0);
+export const RowComponent: FC<RowElement> = ({ title, value }) => {
+  return (
+    <Grid container width={"70%"}>
+      <Grid color={"#B8BCFE"} item md={6} xs={6}>
+        {title}
+      </Grid>
+      <Grid color={"white"} textAlign={"end"} item md={6} xs={6}>
+        $ {value}
+      </Grid>
+    </Grid>
+  );
 };
 
-const ShoppingTable = ({ summary, tipPercentage, decimalValue, promotion }) => {
-  const dispatch = useDispatch();
+const calculateTotalTax = (summary: IService[]) => {
+  return summary.reduce(
+    (sum: number, item: IService) => sum + item.price * item.total,
+    0
+  );
+};
+
+interface IPromotion {
+  name: string;
+  price: number;
+  status: boolean;
+}
+
+interface ShoppingTableProps {
+  tipPercentage: number;
+  decimalValue: number;
+  promotion: IPromotion;
+}
+
+const ShoppingTable: FC<ShoppingTableProps> = ({
+  tipPercentage,
+  decimalValue,
+  promotion,
+}) => {
+  const { services } = useAppSelector((store) => store.clubState);
+  const dispatch = useAppDispatch();
   const { status, price } = promotion;
-  const totals = summary.reduce(
-    (accumulator, item) => {
+  const totals = services.reduce(
+    (accumulator, item: IService) => {
       if (item.name === "Coat") {
         accumulator.COAT += item.total;
       } else if (item.name === "Entry") {
@@ -36,95 +66,87 @@ const ShoppingTable = ({ summary, tipPercentage, decimalValue, promotion }) => {
 
   const subtotal = status
     ? packages * price +
-      remnantEntry * summary.find((item) => item.name === "Entry").price +
-      remnantCoat * summary.find((item) => item.name === "Coat").price
-    : calculateTotalTax(summary);
+      (remnantEntry *
+        (services.find((item: IService) => item.name === "Entry")?.price || 0) +
+        remnantCoat *
+          (services.find((item: IService) => item.name === "Coat")?.price || 0))
+    : calculateTotalTax(services);
 
   const tip =
-    tipPercentage !== 0 ? subtotal * tipPercentage : parseFloat(decimalValue);
+    tipPercentage !== 0.0
+      ? subtotal * tipPercentage
+      : parseFloat(decimalValue + "");
 
   const qst = subtotal * 0.05 + subtotal * 0.09975;
 
   const total =
-    decimalValue !== "" ? subtotal + decimalValue + qst : subtotal + qst + tip;
-  function ccyFormat(num: number) {
-    return `${num.toFixed(2)}`;
+    decimalValue !== 0.0
+      ? subtotal + parseFloat(decimalValue + "") + qst
+      : subtotal + qst + tip;
+
+  function ccyFormat(num: string) {
+    return `${parseFloat(num).toFixed(2)}`;
   }
 
-  function priceRow(qty: number, unit: number) {
-    return qty * unit;
-  }
-
-  function createRow(desc: string, qty: number, unit: number) {
-    const price = priceRow(qty, unit);
-    return { desc, qty, unit, price };
-  }
-
-  const rows = summary.map((item) => {
-    const itemName = item.name;
-    const itemTotal =
-      packages !== 0
-        ? itemName === "Entry"
-          ? remnantEntry
-          : remnantCoat
-        : item.total;
-    const itemTax = item.price;
-    return createRow(itemName, itemTotal, itemTax);
-  });
-
-  rows.unshift(createRow("Promotion", packages, price));
   useEffect(() => {
     dispatch(
       addTotals({
-        subtotal: ccyFormat(subtotal),
-        tip: ccyFormat(tip),
-        qst: ccyFormat(qst),
-        total: ccyFormat(total),
-        products: rows,
+        subtotal: ccyFormat(subtotal + ""),
+        tip: ccyFormat(tip + ""),
+        qst: ccyFormat(qst + ""),
+        total: ccyFormat(total + ""),
+        products: combinedTitles,
       })
     );
-  }, [summary, tipPercentage, decimalValue]);
+  }, [services, tipPercentage, decimalValue]);
+
+  const combinedTitles = services
+    .flatMap((element: IService) => [
+      {
+        title: `${element.name.toUpperCase()} RATE`,
+        value: element.price,
+      },
+      {
+        title: `${element.name.toUpperCase()} X ${
+          total > packages ? element.total - packages : element.total
+        }`,
+        value:
+          packages === total
+            ? 0
+            : total >= packages
+            ? (element.total - packages) * element.price
+            : element.price * element.total,
+      },
+    ])
+    .concat([
+      { title: "Promotion RATE", value: price },
+      { title: `Promotion X ${packages}`, value: price * packages },
+    ]);
+
+  const filteredData = [];
+
+  for (let i = 0; i < combinedTitles.length; i++) {
+    if (combinedTitles[i].value !== 0) {
+      filteredData.push(combinedTitles[i]);
+    } else {
+      filteredData.pop();
+    }
+  }
 
   return (
-    <TableContainer sx={{ maxHeight: "80%", height: "100%" }} component={Paper}>
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Description</TableCell>
-            <TableCell align="right">Qty.</TableCell>
-            <TableCell align="right">Unit</TableCell>
-            <TableCell align="right">Sum</TableCell>
-          </TableRow>
-        </TableHead>
-        <TableBody>
-          {rows.map((row) => (
-            <TableRow key={row.desc}>
-              <TableCell>{row.desc}</TableCell>
-              <TableCell align="right">{row.qty}</TableCell>
-              <TableCell align="right">{row.unit}</TableCell>
-              <TableCell align="right">{ccyFormat(row.price)}</TableCell>
-            </TableRow>
-          ))}
-          <TableRow>
-            <TableCell rowSpan={4} />
-            <TableCell colSpan={2}>Subtotal</TableCell>
-            <TableCell align="right">{ccyFormat(subtotal)}</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell colSpan={2}>Tip</TableCell>
-            <TableCell align="right">{ccyFormat(tip)}</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell colSpan={2}>GST/QST</TableCell>
-            <TableCell align="right">{ccyFormat(qst)}</TableCell>
-          </TableRow>
-          <TableRow>
-            <TableCell colSpan={2}>Total</TableCell>
-            <TableCell align="right">{total}</TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-    </TableContainer>
+    <Grid container display={"flex"} justifyContent={"center"}>
+      {filteredData.map((element, index) => (
+        <RowComponent
+          key={index}
+          title={element.title.toUpperCase()}
+          value={element.value}
+        />
+      ))}
+      <RowComponent title={"SUBTOTAL"} value={ccyFormat(subtotal + "")} />
+      <RowComponent title={"TIP"} value={ccyFormat(tip + "")} />
+      <RowComponent title={"GST/QST"} value={ccyFormat(qst + "")} />
+      <RowComponent title={"TOTAL"} value={ccyFormat(total + "")} />
+    </Grid>
   );
 };
 

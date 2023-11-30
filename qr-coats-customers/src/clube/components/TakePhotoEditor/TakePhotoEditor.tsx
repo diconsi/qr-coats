@@ -25,10 +25,10 @@ const TakePhotoEditor = ({
   onSavedPhoto,
   imagePreview,
 }: ITake) => {
-  const webCamRef = useRef(null);
+  const webCamRef = useRef<Webcam>(null);
   const [type, setType] = useState("NEW");
   const [loadingButtonSave, setLoadingButtonSave] = useState(false);
-  const [filePreview, setFilePreview] = useState(null);
+  const [filePreview, setFilePreview] = useState<string | null>(null);
 
   useEffect(() => {
     if (imagePreview) {
@@ -40,7 +40,7 @@ const TakePhotoEditor = ({
   const onPressTakePhoto = () => {
     if (type === "NEW") {
       let imageSrc = null;
-      imageSrc = webCamRef.current.getScreenshot();
+      imageSrc = webCamRef.current?.getScreenshot() ?? null;
       setFilePreview(imageSrc);
       setType("EDIT");
     } else {

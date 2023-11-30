@@ -39,3 +39,16 @@ export const signUp = (userData: UserData) => {
     controller,
   };
 };
+
+export const updateUser = (id: string, user: any, accesToken: string) => {
+  const controller = loadAbort();
+  return {
+    call: axios.put(`http://localhost:3000/api/v1/user/${id}`,user, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
+    }),
+    controller,
+  };
+};

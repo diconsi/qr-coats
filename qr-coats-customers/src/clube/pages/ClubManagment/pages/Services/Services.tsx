@@ -1,57 +1,56 @@
-import accesIcon from "@/assets/acces.svg";
-import iconCoat from "@/assets/coat.svg";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { setServices } from "@/store/club/clubSlice";
 import { Grid } from "@mui/material";
-import { useState } from "react";
+import { useEffect } from "react";
+import GuestForm from "./components/GuestForm";
 import ServicesSection from "./components/ServicesSection";
 import TotalsSection from "./components/TotalsSection";
 import UserSection from "./components/UserSection";
-import { useSelector } from "react-redux";
 
 export interface ISummary {
   id: number;
   name: string;
   tax: number;
   icon: string;
+  status: boolean;
   total: number;
 }
 
 const Services = () => {
-  const {
-    activeClub: { services },
-  } = useSelector((store) => store.clubState);
-  const newData = services
-    .map((item) => {
-      let icon = "";
+  const { activeClub, services } = useAppSelector((store) => store.clubState);
+  const { isAnonymous } = useAppSelector((store) => store.authState);
+  const { services: activeServices, withInformationGuest } = activeClub;
+  const dispatch = useAppDispatch();
 
-      if (item.name === "Coat") {
-        icon = iconCoat;
-      } else if (item.name === "Entry") {
-        icon = accesIcon;
-      }
-      return { ...item, icon, total: 0 };
-    })
-    .filter((item) => item.id !== "0003");
+  useEffect(() => {
+    if (services.length === 0) {
+      initializeServices();
+    }
+  }, [activeClub, services.length]);
 
-  const promotion = services.find((item) => item.id == "0003");
+  const initializeServices = () => {
+    const promotion = activeServices.find((item) => item.id == "0003");
 
-  const [summary, setSummary] = useState<ISummary[]>([...newData]);
+    const servicesClub = activeServices
+      .map((item) => ({
+        ...item,
+        total: 0,
+      }))
+      .filter((item) => item.id !== "0003");
+    dispatch(setServices({ services: servicesClub, promotion: promotion }));
+  };
 
   return (
-    <Grid
-      alignItems="center"
-      container
-      sx={{ height: "70%", overflowY: "scroll", pt: 4 }}
-    >
-      <Grid container sx={{ height: "100%" }}>
-        <ServicesSection
-          summary={summary}
-          setSummary={setSummary}
-          promotion={promotion}
-        />
-        <TotalsSection summary={summary} promotion={promotion} />
-        <Grid container sx={{ height: "25%" }}>
-          <UserSection summary={summary} />
-        </Grid> 
+    <Grid alignItems="center" container mt={"10%"}>
+      <Grid container>
+        <ServicesSection />
+        <TotalsSection />
+        <Grid container>
+          <Grid container>
+            {isAnonymous && withInformationGuest && <GuestForm />}
+            <UserSection />
+          </Grid>
+        </Grid>
       </Grid>
     </Grid>
   );
