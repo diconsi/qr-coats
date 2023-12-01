@@ -102,9 +102,9 @@ const LoginPage: React.FC = () => {
 
   return (
     <AuthLayout title="WELCOME BACK!">
-      <Typography sx={{ mt: 4 }}>SIGN IN TO CONTINUE</Typography>
+      <Typography sx={{ mt: 2 }}>SIGN IN TO CONTINUE</Typography>
       <Grid container>
-        <Grid item xs={12} sx={{ mt: 4 }}>
+        <Grid item xs={12} sx={{ mt: 2 }}>
           <InputText
             type="text"
             name="userName"
@@ -116,7 +116,7 @@ const LoginPage: React.FC = () => {
             endAdornmentIcon={<PersonIcon />}
           />
         </Grid>
-        <Grid item xs={12} sx={{ mt: 4 }}>
+        <Grid item xs={12} sx={{ mt: 2 }}>
           <InputText
             type="password"
             name="password"
@@ -130,12 +130,12 @@ const LoginPage: React.FC = () => {
             onTogglePasswordVisibility={handleTogglePasswordVisibility}
           />
         </Grid>
-        <Grid container display={errorMessage ? "" : "none"} sx={{ mt: 4 }}>
+        <Grid container display={errorMessage ? "" : "none"} sx={{ mt: 2 }}>
           <Grid item xs={12} md={12}>
             <Alert severity="error">{errorMessage}</Alert>
           </Grid>
         </Grid>
-        <Grid container sx={{ mt:4 }}>
+        <Grid container sx={{ mt: 2 }}>
           <Grid item xs={12} md={12}>
             <CustomButton
               className="auth-button"
@@ -146,7 +146,7 @@ const LoginPage: React.FC = () => {
           </Grid>
         </Grid>
       </Grid>
-      <Grid container flexDirection="row" justifyContent="end" mt={4}>
+      <Grid container flexDirection="row" justifyContent="end" mt={2}>
         <Link component={RouterLink} color="inherit" to={resgiterPath}>
           CREATE YOUR ACCOUNT
         </Link>

@@ -7,7 +7,11 @@ import { GoogleOAuthProvider } from "@react-oauth/google";
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <GoogleOAuthProvider clientId={"169386123935-i87bl3t7e9tjkc7hf2oo57ge3u3ds25d.apps.googleusercontent.com"}>
+    <GoogleOAuthProvider
+      clientId={
+        "169386123935-i87bl3t7e9tjkc7hf2oo57ge3u3ds25d.apps.googleusercontent.com"
+      }
+    >
       <BrowserRouter>
         <QrCoatApp />
       </BrowserRouter>

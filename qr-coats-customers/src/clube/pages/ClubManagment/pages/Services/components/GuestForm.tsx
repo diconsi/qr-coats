@@ -72,7 +72,7 @@ const GuestForm: React.FC = () => {
       container
       display={"flex"}
       justifyContent={"center"}
-      sx={{ width: "100%"}}
+      sx={{ width: "100%" }}
     >
       <Grid
         container
@@ -81,7 +81,7 @@ const GuestForm: React.FC = () => {
         sx={{ width: "100%" }}
       >
         <Typography textAlign={"center"}>
-          Ingresa información para continuar
+          Enter information to continue
         </Typography>
         {fields.map((item) => {
           if (item.visible) {

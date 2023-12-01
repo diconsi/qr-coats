@@ -1,4 +1,4 @@
-import { setViewSidebar } from "@/store/auth/authSlice";
+import { logout, setViewSidebar } from "@/store/auth/authSlice";
 import { LogoutOutlined, MenuOutlined } from "@mui/icons-material";
 import { AppBar, Grid, IconButton, Toolbar, Typography } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
@@ -6,7 +6,9 @@ const NavBar = ({ drawerWidth }) => {
   const { activeClub } = useSelector((store) => store.clubState);
 
   const dispatch = useDispatch();
-  const onLogout = () => {};
+  const onLogout = () => {
+    dispatch(logout({}));
+  };
 
   const onSidebar = () => {
     dispatch(setViewSidebar());

@@ -100,7 +100,8 @@ const ClubManagment = () => {
   };
 
   useEffect(() => {
-    if (location.search !== "") {
+    if (location.search !== "" && activeStep !== 2) {
+      console.log("dispara");
       onPayCheckout();
     }
   }, [location]);
@@ -172,7 +173,7 @@ const ClubManagment = () => {
               </Stepper>
             </Grid>
           </Grid>
-          <Grid container sx={{ height:'70%'}}>
+          <Grid container sx={{ height: "70%" }}>
             {getStepContent(activeStep)}
             <Grid
               container

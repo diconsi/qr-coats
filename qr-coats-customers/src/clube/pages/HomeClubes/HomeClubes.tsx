@@ -34,24 +34,23 @@ const HomeClubes = () => {
   return (
     <ClubeLayout>
       <Grid container height={"100%"}>
-        <Grid
-          display={"flex"}
-          alignItems={"center"}
-          justifyContent={"center"}
-          container
-          height={"30%"}
-        >
-          <Grid item xs={12} mt={2} textAlign={"center"}>
-            <Typography variant="h4">VENUES</Typography>
-          </Grid>
+        <Grid container height={"30%"}>
           <Grid
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"flex-start"}
+            flexDirection={"column"}
             item
             xs={12}
-            mt={2}
-            mb={2}
-            display={"flex"}
-            justifyContent={"center"}
+            textAlign={"center"}
+            sx={{ height: "100%" }}
           >
+            <Typography
+              sx={{ marginTop: "10%", marginBottom: "10%" }}
+              variant="h2"
+            >
+              VENUES
+            </Typography>
             <InputText
               type="text"
               name="find"

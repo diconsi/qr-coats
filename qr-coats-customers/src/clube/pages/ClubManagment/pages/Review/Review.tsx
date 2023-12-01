@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/hooks";
+import { useAppSelector, useFetchAndLoad } from "@/hooks";
 import WalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import AddIcon from "@mui/icons-material/Add";
 import ReceiptIcon from "@mui/icons-material/Receipt";
@@ -11,8 +11,11 @@ import {
   DialogTitle,
   Grid,
   IconButton,
+  Snackbar,
   Typography,
 } from "@mui/material";
+
+import MuiAlert from "@mui/material/Alert";
 
 import { CustomButton } from "@/clube/components";
 import { uploadFile } from "@/firebase/config";
@@ -39,10 +42,20 @@ interface IQR {
 }
 
 const Review: FC<ReviewProps> = ({ setActiveStep }) => {
+  const { callEndpoint } = useFetchAndLoad();
   const { order, activeClub } = useAppSelector((store) => store.clubState);
   const { access_token } = useAppSelector((store) => store.authState);
   const { icon, iconQrVisible } = activeClub;
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const [openSnack, setOpenSnack] = useState(false);
+  const handleOpenSnack = () => {
+    setOpenSnack(true);
+  };
+
+  const handleCloseSnack = () => {
+    setOpenSnack(false);
+  };
 
   const handleSlideChange = (selectedIndex: number) => {
     setCurrentSlideIndex(selectedIndex);
@@ -71,7 +84,10 @@ const Review: FC<ReviewProps> = ({ setActiveStep }) => {
 
       if (pngBlob) {
         const downloadURL = await uploadFile(pngBlob, "QR");
-        sendCustomEmail({ email, urlImage: downloadURL }, access_token);
+        const { status } = await callEndpoint(
+          sendCustomEmail({ email, urlImage: downloadURL }, access_token)
+        );
+        if (status === 201) handleOpenSnack();
       }
     }
   };
@@ -226,6 +242,20 @@ const Review: FC<ReviewProps> = ({ setActiveStep }) => {
           />
         </DialogActions>
       </Dialog>
+      <Snackbar
+        open={openSnack}
+        autoHideDuration={6000}
+        onClose={handleCloseSnack}
+      >
+        <MuiAlert
+          elevation={6}
+          variant="filled"
+          onClose={handleClose}
+          severity="success"
+        >
+          EMAIL SENT SUCCESSFULLY
+        </MuiAlert>
+      </Snackbar>
     </Grid>
   );
 };

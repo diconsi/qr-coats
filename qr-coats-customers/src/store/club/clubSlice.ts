@@ -83,7 +83,6 @@ const clubSlice = createSlice({
     },
     resetServicesOrder: (state) => {
       state.qrList = [];
-      state.totals = { total: 0, subtotal: 0 };
     },
     deleteServiceById: (state, action) => {
       state.qrList = state.qrList.filter(

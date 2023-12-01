@@ -15,7 +15,6 @@ const Payment = () => {
   const { callEndpoint } = useFetchAndLoad();
   const { totals } = useAppSelector((store) => store.clubState);
   const amount = totals.total * 100;
-
   useEffect(() => {
     init();
   }, []);

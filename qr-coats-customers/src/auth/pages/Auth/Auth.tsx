@@ -88,7 +88,7 @@ const Auth = () => {
             style={{ border: "none" }}
           />
         </Grid>
-        <Grid item xs={12} mt={4}>
+        <Grid item xs={12} mt={2}>
           <CustomButton
             className="auth-button"
             onClick={onLogin}
@@ -96,9 +96,15 @@ const Auth = () => {
             fullWidth={true}
           />
         </Grid>
-        <Grid item xs={12} mt={4}>
-          <span style={{ fontWeight: "normal", fontSize: "14px", marginRight:'5px' }}>
-            DON´T HAVE AN ACCOUNT? 
+        <Grid item xs={12} mt={2}>
+          <span
+            style={{
+              fontWeight: "normal",
+              fontSize: "14px",
+              marginRight: "5px",
+            }}
+          >
+            DON´T HAVE AN ACCOUNT?
           </span>
           <Link
             style={{ color: "white", textDecoration: "none" }}
@@ -107,22 +113,33 @@ const Auth = () => {
             CREATE ONE
           </Link>
         </Grid>
-        <Grid item xs={12} mt={4}>
+        <Grid item xs={12} mt={2}>
           <Typography variant="h6" align="center">
             SIGN IN WITH
           </Typography>
         </Grid>
-        <Grid item xs={12} sx={{ mt: 4 }}>
-          <Grid container >
-          <Grid item xs={12} md={6} display={"flex"} justifyContent={"center"}>
-            <GoogleLogin size="large" onSuccess={onSuccess} onError={onError} />
+        <Grid item xs={12} >
+          <Grid container>
+            <Grid
+              item
+              xs={12}
+              md={6}
+              display={"flex"}
+              justifyContent={"center"}
+              mt={2}
+            >
+              <GoogleLogin
+                size="large"
+                onSuccess={onSuccess}
+                onError={onError}
+              />
+            </Grid>
+            <Grid item mt={2} xs={12} md={6}>
+              <Button variant="contained" fullWidth>
+                <Typography sx={{ ml: 1 }}>Apple</Typography>
+              </Button>
+            </Grid>
           </Grid>
-          <Grid item mt={4} xs={12} md={6}>
-            <Button variant="contained" fullWidth>
-              <Typography sx={{ ml: 1 }}>Apple</Typography>
-            </Button>
-          </Grid>
-        </Grid>
         </Grid>
       </Grid>
     </AuthLayout>
