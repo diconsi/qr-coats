@@ -1,5 +1,16 @@
-import { Button, Stack, Typography } from "@mui/material";
-const HeaderSectionPage = ({
+import { Grid, Typography } from "@mui/material";
+import { CustomButton } from "..";
+import { FC, ReactNode } from "react";
+
+interface IHeaderSection {
+  title: string;
+  titleButton: string;
+  onClick: () => void;
+  icon: ReactNode;
+  disableButton?: boolean;
+}
+
+const HeaderSectionPage: FC<IHeaderSection> = ({
   title,
   titleButton,
   onClick,
@@ -7,28 +18,26 @@ const HeaderSectionPage = ({
   disableButton = false,
 }) => {
   const handleButton = () => {
-    debugger
     onClick();
   };
   return (
-    <Stack
-      direction="row"
-      alignItems="center"
-      justifyContent="space-between"
-      sx={{ height: "20%" }}
+    <Grid
+      container
+      width={"100%"}
+      display={"flex"}
+      justifyContent={"space-between"}
     >
-      <Typography variant="h4" gutterBottom>
+      <Typography sx={{ color: "#677483" }} variant="h4">
         {title}
       </Typography>
-      <Button
-        disabled={disableButton}
-        variant="contained"
-        onClick={handleButton}
+      <CustomButton
         startIcon={icon}
-      >
-        {titleButton}
-      </Button>
-    </Stack>
+        label={titleButton}
+        onClick={handleButton}
+        disabled={disableButton}
+        background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+      />
+    </Grid>
   );
 };
 

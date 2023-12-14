@@ -1,6 +1,18 @@
-import { ModalComponent, TableList } from "@/clube/components";
+import {
+  CustomButton,
+  HeaderSectionPage,
+  InputText,
+  ModalComponent,
+  TableList,
+} from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
-import { deleteEmployee, editEmployee, newEmployee } from "@/constants";
+import {
+  deleteEmployee,
+  editEmployee,
+  employee,
+  newEmployee,
+} from "@/constants";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
 import {
   createEmployee,
@@ -19,28 +31,28 @@ import { DeleteOutline, EditOutlined } from "@mui/icons-material";
 import PasswordOutlinedIcon from "@mui/icons-material/PasswordOutlined";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import {
-  Container,
   FormControl,
   Grid,
-  InputLabel,
   MenuItem,
   Select,
-  TextField,
+  SelectChangeEvent,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+
 const initialState = {
+  _id: "",
   name: "",
   username: "",
   email: "",
   password: "",
   gender: "",
 };
+
 const Employes = () => {
   const { callEndpoint } = useFetchAndLoad();
-  const dispatch = useDispatch();
-  const { access_token, uid } = useSelector((store) => store.authState);
-  const { employees } = useSelector((store) => store.employeeState);
+  const dispatch = useAppDispatch();
+  const { access_token, uid } = useAppSelector((store) => store.authState);
+  const { employees } = useAppSelector((store) => store.employeeState);
   useEffect(() => {
     init();
   }, []);
@@ -49,14 +61,19 @@ const Employes = () => {
     const {
       data: { employees },
     } = await callEndpoint(getEmployeesByAdmin(uid, access_token));
-
-    dispatch(setEmployees(employees));
+    dispatch(
+      setEmployees(
+        employees.filter(
+          (employe: { status: boolean }) => employe.status !== false
+        )
+      )
+    );
   };
 
   const [showModal, setShowModal] = useState(false);
   const [titleModal, setTitleModal] = useState("");
   const [state, setState] = useState(initialState);
-  const [activeUser, setActiveUser] = useState({});
+  const [activeUser, setActiveUser] = useState("");
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setState({
@@ -65,10 +82,23 @@ const Employes = () => {
     });
   };
 
-  const handleActioModal = (titleModal: string, user: any) => {
-    if (user !== undefined) setActiveUser(user);
+  const onChangeSelect = (event: SelectChangeEvent<string>) => {
+    setState({
+      ...state,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleActioModal = (
+    titleModal: string,
+    _id: string = "",
+    name: string = "",
+    username: string = "",
+    email: string = "",
+    gender: string = ""
+  ) => {
+    if (_id !== undefined) setActiveUser(_id);
     if (titleModal === editEmployee) {
-      const { name, username, email, gender } = user;
       setState({ ...state, name, username, email, gender });
     }
     setTitleModal(titleModal);
@@ -78,28 +108,41 @@ const Employes = () => {
   const onClosedModal = () => {
     setShowModal(false);
     setState(initialState);
-    setActiveUser({});
+    setActiveUser("");
   };
+
   const columns = [
-    { accessor: "name", title: "Employee", textAlignment: "center" },
-    { accessor: "email", title: "Email", textAlignment: "center" },
-    { accessor: "username", title: "Username", textAlignment: "center" },
-    { accessor: "gender", title: "Gender", textAlignment: "center" },
+    { accessor: "name", title: "EMPLOYEE", textAlignment: "center" },
+    { accessor: "email", title: "EMAIL", textAlignment: "center" },
+    { accessor: "username", title: "USERNAME", textAlignment: "center" },
+    { accessor: "gender", title: "GENDER", textAlignment: "center" },
     {
       accessor: "password",
-      title: "Password",
+      title: "PASSWORD",
       textAlignment: "center",
-      render: (row) => renderPassword(row),
+      render: () => renderPassword(),
     },
     {
       accessor: "acciones",
-      title: "Acciones",
+      title: "ACTIONS",
       textAlignment: "center",
-      render: (row) => renderOpcion(row),
+      render: ({
+        _id,
+        name,
+        username,
+        email,
+        gender,
+      }: {
+        _id: string;
+        name: string;
+        username: string;
+        email: string;
+        gender: string;
+      }) => renderOpcion(_id, name, username, email, gender),
     },
   ];
 
-  const renderPassword = (row) => {
+  const renderPassword = () => {
     return (
       <Group spacing={4} position="center" noWrap>
         <ActionIcon color="blue">
@@ -109,18 +152,28 @@ const Employes = () => {
     );
   };
 
-  const renderOpcion = (row) => {
+  const renderOpcion = (
+    _id: string,
+    name: string,
+    username: string,
+    email: string,
+    gender: string
+  ) => {
     return (
       <Group spacing={4} position="center" noWrap>
         <ActionIcon
           color="blue"
-          onClick={() => handleActioModal(editEmployee, row)}
+          onClick={() =>
+            handleActioModal(editEmployee, _id, name, username, email, gender)
+          }
         >
           <EditOutlined />
         </ActionIcon>
         <ActionIcon
           color="red"
-          onClick={() => handleActioModal(deleteEmployee, row)}
+          onClick={() =>
+            handleActioModal(deleteEmployee, _id, name, username, email, gender)
+          }
         >
           <DeleteOutline />
         </ActionIcon>
@@ -142,6 +195,7 @@ const Employes = () => {
     const { data, status } = await callEndpoint(
       createEmployee(access_token, newEmployee)
     );
+
     if (status === 201) {
       setState(initialState);
       dispatch(addEmployee(data));
@@ -153,9 +207,9 @@ const Employes = () => {
     const {
       status,
       data: { _id },
-    } = await callEndpoint(deleteUser(activeUser._id, access_token));
+    } = await callEndpoint(deleteUser(activeUser, access_token));
     if (status === 200) {
-      setActiveUser({});
+      setActiveUser("");
       dispatch(deleteEmployeeById(_id));
       onClosedModal();
     }
@@ -169,10 +223,10 @@ const Employes = () => {
       gender: state.gender,
     };
     const { status, data } = await callEndpoint(
-      updateUser(activeUser._id, employee, access_token)
+      updateUser(activeUser, employee, access_token)
     );
     if (status === 200) {
-      setActiveUser({});
+      setActiveUser("");
       dispatch(updateEmployee(data));
       onClosedModal();
     }
@@ -198,39 +252,28 @@ const Employes = () => {
         ) : (
           <Grid container>
             <Grid item mt={1} md={12}>
-              <TextField
-                fullWidth
+              <InputText
                 type="text"
-                label="Full Name"
                 placeholder="Full Name"
-                id="name"
                 name="name"
                 value={state.name}
                 onChange={onChange}
               />
             </Grid>
             <Grid item mt={1} md={6} p={1}>
-              <TextField
-                label="Username"
+              <InputText
                 type="text"
                 placeholder="Username"
-                fullWidth
-                variant="filled"
-                color="primary"
                 name="username"
-                id="username"
                 value={state.username}
                 onChange={onChange}
               />
             </Grid>
             {titleModal !== editEmployee && (
               <Grid item mt={1} md={6} p={1}>
-                <TextField
-                  fullWidth
+                <InputText
                   type="password"
-                  label="Password"
                   placeholder="Password"
-                  id="password"
                   name="password"
                   value={state.password}
                   onChange={onChange}
@@ -238,30 +281,34 @@ const Employes = () => {
               </Grid>
             )}
             <Grid item mt={1} md={6} p={1}>
-              <TextField
-                fullWidth
+              <InputText
                 type="email"
-                label="Email"
                 placeholder="Email"
-                id="email"
                 name="email"
                 value={state.email}
                 onChange={onChange}
               />
             </Grid>
             <Grid item mt={1} md={6} p={1}>
-              <FormControl sx={{ width: "100%" }}>
-                <InputLabel>Género</InputLabel>
+              <FormControl sx={{ width: "100%", p: 0 }}>
                 <Select
                   value={state.gender}
                   id="gender"
                   name="gender"
-                  onChange={onChange}
-                  label="Género"
+                  onChange={onChangeSelect}
+                  placeholder="Gender"
+                  sx={{
+                    borderRadius: "30px",
+                    border: "2px solid #B8BCFE",
+                    "& .css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input":
+                      {
+                        paddingTop: "10px",
+                        paddingBottom: "10px",
+                        color:'white'
+                      },
+                  }}
                 >
-                  <MenuItem value="">
-                    <em>Seleccionar</em>
-                  </MenuItem>
+                  <MenuItem value="">Seleccionar</MenuItem>
                   <MenuItem value="masculino">Masculino</MenuItem>
                   <MenuItem value="femenino">Femenino</MenuItem>
                 </Select>
@@ -273,26 +320,60 @@ const Employes = () => {
     );
   };
 
+  const renderFooter = () => {
+    return (
+      <Grid container justifyContent={"end"}>
+        <CustomButton
+          fullWidth={false}
+          label="CANCEL"
+          onClick={onClosedModal}
+        />
+        <CustomButton
+          style={{ marginLeft: "5px" }}
+          fullWidth={false}
+          label="OK"
+          onClick={onSave}
+          background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+        />
+      </Grid>
+    );
+  };
+
+  const newEmploye = () => {
+    handleActioModal(newEmployee);
+  };
+
   return (
     <ClubeLayout>
-      <Container sx={{ height: "80%", maxWidth: "100% !important" }}>
-        <TableList
-          title={newEmployee}
-          titleButton={newEmployee}
-          iconHeaderSection={<PersonAddOutlinedIcon />}
-          data={employees}
-          columns={columns}
-          handleActioModal={handleActioModal}
-        />
-        <ModalComponent
-          title={titleModal}
-          center
-          body={renderBody()}
-          showModal={showModal}
-          onClose={onClosedModal}
-          onSave={onSave}
-        />
-      </Container>
+      <Grid container sx={{ height: "100%", width: "100%", p: 2 }}>
+        <Grid
+          display="flex"
+          alignItems={"center"}
+          justifyContent={"center"}
+          width={"100%"}
+          height={"10%"}
+          item
+          p={2}
+        >
+          <HeaderSectionPage
+            title={employee.toUpperCase()}
+            titleButton={newEmployee}
+            onClick={newEmploye}
+            icon={<PersonAddOutlinedIcon />}
+          />
+        </Grid>
+        <Grid container sx={{ height: "90%", width: "100%", p: 2 }}>
+          <TableList data={employees} columns={columns} />
+          <ModalComponent
+            title={titleModal}
+            center
+            body={renderBody()}
+            showModal={showModal}
+            onHide={onClosedModal}
+            footer={renderFooter()}
+          />
+        </Grid>
+      </Grid>
     </ClubeLayout>
   );
 };

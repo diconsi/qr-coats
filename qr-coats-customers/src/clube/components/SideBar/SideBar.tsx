@@ -21,7 +21,7 @@ import {
 } from "@mui/material";
 import { FC, useEffect } from "react";
 import { io } from "socket.io-client";
-const socket = io("http://3.19.76.186:3000");
+const socket = io("https://d21ln96nsulz10.cloudfront.net/");
 
 interface ISidebar {
   drawerWidth: number;

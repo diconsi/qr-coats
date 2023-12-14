@@ -3,13 +3,20 @@ import { red } from "@mui/material/colors";
 export const theme = createTheme({
   palette: {
     primary: {
-      main: "#6329e6",
+      main: "#22252E",
     },
     secondary: {
-      main: "#543844",
+      main: "#2C2E3A",
     },
     error: {
       main: red.A400,
     },
   },
+  typography: {
+    fontFamily: "AttenBold",
+    body1: {
+      color: "#ffffff",
+    },
+  },
 });
+

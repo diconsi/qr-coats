@@ -12,7 +12,7 @@ export interface orderDto {
 export const getOrders = (creator: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`http://3.19.76.186:3000/api/v1/order/getOrdersByCustomer/${creator}`, {
+    call: axios.get(`https://d21ln96nsulz10.cloudfront.net/api/v1/order/getOrdersByCustomer/${creator}`, {
       headers: {
         Authorization: `Bearer ${accesToken}`,
       },
@@ -26,7 +26,7 @@ export const getOrders = (creator: string, accesToken: string) => {
 export const createOrder = (accesToken: string, data: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post("http://3.19.76.186:3000/api/v1/order", data, {
+    call: axios.post("https://d21ln96nsulz10.cloudfront.net/api/v1/order", data, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,

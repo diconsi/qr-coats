@@ -1,6 +1,11 @@
 import { Grid } from "@mui/material";
+import { FC, ReactNode } from "react";
 
-const GridItemCenter = ({ children }) => {
+interface IGridItemCenter {
+  children: ReactNode;
+}
+
+const GridItemCenter: FC<IGridItemCenter> = ({ children }) => {
   return (
     <Grid
       item

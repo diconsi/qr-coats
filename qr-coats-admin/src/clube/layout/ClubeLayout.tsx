@@ -1,10 +1,15 @@
-import { Box, Toolbar } from "@mui/material";
+import { IChildren } from "@/models";
+import { Box } from "@mui/material";
+import { FC } from "react";
 import { NavBar, SideBar } from "../components";
 
 const drawerWidth = 240;
-const ClubeLayout = ({ children }) => {
+const ClubeLayout: FC<IChildren> = ({ children }) => {
   return (
-    <Box sx={{ display: "flex", height: "100vh" }}>
+    <Box
+      sx={{ display: "flex", width: "100vw", background: "#22252F" }}
+      component="div"
+    >
       <NavBar drawerWidth={drawerWidth} />
       <SideBar drawerWidth={drawerWidth} />
       <Box
@@ -12,7 +17,7 @@ const ClubeLayout = ({ children }) => {
         sx={{
           height: "100vh",
           width: "100%",
-          padding: "10vh 0vh 0vh 0vh",
+          padding: "8vh 0vh 0vh 0vh",
         }}
       >
         {children}

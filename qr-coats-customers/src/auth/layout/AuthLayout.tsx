@@ -16,24 +16,7 @@ const AuthLayout: FC<IAuthLayout> = ({ children, title = "" }) => {
   };
 
   return (
-    <Grid
-      container
-      style={style}
-      width={"100vw"}
-      height={"100vh"}
-      sx={{ borderStyle: "dashed" }}
-    >
-      {/* <Grid
-        container
-        sx={{
-          height: "30%",
-          mt: 4,
-         
-        }}
-        justifyContent={"center"}
-      >
-        <img src={qrIcon} style={{ border: "none", height: "100%" }} />
-      </Grid> */}
+    <Grid container style={style} width={"100vw"} height={"100vh"}>
       <Grid
         container
         sx={{

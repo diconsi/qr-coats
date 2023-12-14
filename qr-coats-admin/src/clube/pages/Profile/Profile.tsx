@@ -1,39 +1,33 @@
 import {
-  ContainerBorder,
   DropzoneInput,
   HeaderSectionPage,
+  InputText,
   TimePickerComponent,
 } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
 import { uploadFiles } from "@/firebase/config";
+import { useAppSelector } from "@/hooks";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
 import { updateClube } from "@/services";
+import { CheckingAuth } from "@/ui";
 import UpdateOutlinedIcon from "@mui/icons-material/UpdateOutlined";
-import { Container, Grid, TextField } from "@mui/material";
+import { Container, Grid, Typography } from "@mui/material";
 import { useState } from "react";
 import { QRCode } from "react-qrcode-logo";
-import { useSelector } from "react-redux";
 
 const ClubeProfile = () => {
-  const { activeClub } = useSelector((store) => store.clubState);
-  const { uid, access_token } = useSelector((store) => store.authState);
-  const {
-    name,
-    icon,
-    photo,
-    customNote,
-    closingHour,
-    openingHour,
-    iconQrVisble,
-  } = activeClub;
+  const { activeClub } = useAppSelector((store) => store.clubState);
+  const { uid, access_token } = useAppSelector((store) => store.authState);
+  const { icon, photo, customNote, closingHour, openingHour, iconQrVisible } =
+    activeClub;
   const [note, setNote] = useState(customNote);
   const [closing, setClosing] = useState(closingHour);
   const [opening, setOpening] = useState(openingHour);
 
-  const [selectedFileIcon, setSelectedFileIcon] = useState(null);
-  const [selectedFilePhoto, setSelectedFilePhoto] = useState(null);
+  const [selectedFileIcon, setSelectedFileIcon] = useState<File | null>(null);
+  const [selectedFilePhoto, setSelectedFilePhoto] = useState<File | null>(null);
 
-  const { callEndpoint } = useFetchAndLoad();
+  const { callEndpoint, loading } = useFetchAndLoad();
 
   const handleUpdate = async () => {
     let iconClub = null;
@@ -47,7 +41,13 @@ const ClubeProfile = () => {
       photoClub = await uploadFiles(selectedFilePhoto, "clubes");
     }
 
-    const newClub = {
+    const newClub: {
+      icon?: string | null;
+      photo?: string | null;
+      customNote: string;
+      closingHour: string;
+      openingHour: string;
+    } = {
       icon: iconClub,
       photo: photoClub,
       customNote: note,
@@ -62,7 +62,6 @@ const ClubeProfile = () => {
       updateClube(activeClub._id, newClub, access_token)
     );
     if (status === 200) {
-      alert("Acualizado correctamente");
       setSelectedFileIcon(null);
       setSelectedFilePhoto(null);
     }
@@ -70,105 +69,239 @@ const ClubeProfile = () => {
 
   return (
     <ClubeLayout>
-      <Container sx={{ height: "100%", maxWidth: "100% !important" }}>
-        <HeaderSectionPage
-          title={`${name} - Settings`}
-          titleButton="Update"
-          onClick={handleUpdate}
-          icon={<UpdateOutlinedIcon />}
-        />
-        <Grid container sx={{ height: "80%", width: "100%" }}>
+      {loading ? (
+        <CheckingAuth />
+      ) : (
+        <Grid sx={{ height: "100%", width: "100%", p: 2 }}>
           <Grid
-            container
-            sx={{
-              height: "35%",
-              padding: "20px 0px",
-              justifyContent: "space-between",
-            }}
+            display={"flex"}
+            alignItems={"center"}
+            justifyContent={"center"}
+            item
+            width={"100%"}
+            height={"10%"}
+            p={2}
           >
-            <ContainerBorder title="Icon" height="100%" width="49%">
-              <DropzoneInput
-                setSelectedFile={setSelectedFileIcon}
-                previewIcon={icon}
-              />
-            </ContainerBorder>
-            <ContainerBorder title="Image" height="100%" width="49%">
-              <DropzoneInput
-                setSelectedFile={setSelectedFilePhoto}
-                previewIcon={photo}
-              />
-            </ContainerBorder>
+            <HeaderSectionPage
+              title={"SETTINGS"}
+              titleButton={"Updated"}
+              onClick={handleUpdate}
+              icon={<UpdateOutlinedIcon />}
+            />
           </Grid>
           <Grid
             container
             sx={{
-              height: "35%",
-              padding: "20px 0px",
-              justifyContent: "space-between",
-            }}
-          >
-            <ContainerBorder title="QR Clube" height="100%" width="49%">
-              <Grid display="flex" justifyContent="center" width="50%">
-                <QRCode
-                  logoImage={icon }
-                  logoHeight={35}
-                  logoWidth={35}
-                  logoPadding={1}
-                  value={`https://www.employes.com/?idAdmin=${uid}&idClub=${activeClub.id}`}
-                />
-              </Grid>
-            </ContainerBorder>
-            <ContainerBorder title="QR Customer" height="100%" width="49%">
-              <Grid display="flex" justifyContent="center" width="50%">
-                <QRCode
-                  logoImage={iconQrVisble ? (icon ? icon : null) : null}
-                  logoHeight={35}
-                  logoWidth={35}
-                  logoPadding={1}
-                  value={`https://192.168.100.55:5173/?idClub=${activeClub.id}`}
-                />
-              </Grid>
-            </ContainerBorder>
-          </Grid>
-          <Grid
-            container
-            sx={{
-              height: "30%",
+              height: "90%",
               width: "100%",
-              justifyContent: "space-between",
+              overflowY: { xs: "scroll", md: "initial" },
             }}
           >
-            <ContainerBorder title="Club Hours" height="100%" width="49%">
-              <Grid>
-                <TimePickerComponent
-                  value={opening}
-                  setValue={setOpening}
-                  placeHolder="Opening"
-                />
-                <TimePickerComponent
-                  value={closing}
-                  setValue={setClosing}
-                  placeHolder="Closing"
-                />
+            <Grid item md={12} sx={{ height: { md: "50%" } }}>
+              <Grid container>
+                <Grid item md={4} xs={12} p={2}>
+                  <Container
+                    sx={{
+                      bgcolor: "#2E313D",
+                      borderRadius: 4,
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      position: "relative",
+                      p: 3,
+                    }}
+                  >
+                    <Typography sx={{ position: "absolute", top: "5px" }}>
+                      IMAGE
+                    </Typography>
+                    <DropzoneInput
+                      setSelectedFile={setSelectedFilePhoto}
+                      previewIcon={photo}
+                    />
+                  </Container>
+                </Grid>
+                <Grid item md={4} xs={12} p={2}>
+                  <Container
+                    sx={{
+                      bgcolor: "#2E313D",
+                      borderRadius: 4,
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      position: "relative",
+                      p: 3,
+                    }}
+                  >
+                    <Typography sx={{ position: "absolute", top: "5px" }}>
+                      QR EMPLOYEE
+                    </Typography>
+                    <QRCode
+                      logoImage={
+                        iconQrVisible ? (icon ? icon : undefined) : undefined
+                      }
+                      logoHeight={35}
+                      logoWidth={35}
+                      logoPadding={1}
+                      value={`https://d2cadzk8as2kud.cloudfront.net/auth/login?adminId==${uid}`}
+                    />
+                  </Container>
+                </Grid>
+                <Grid item md={4} xs={12} p={2}>
+                  <Container
+                    sx={{
+                      bgcolor: "#2E313D",
+                      borderRadius: 4,
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      position: "relative",
+                      p: 3,
+                    }}
+                  >
+                    <Typography sx={{ position: "absolute", top: "5px" }}>
+                      QR CLUB
+                    </Typography>
+                    <QRCode
+                      logoImage={
+                        iconQrVisible ? (icon ? icon : undefined) : undefined
+                      }
+                      logoHeight={35}
+                      logoWidth={35}
+                      logoPadding={1}
+                      value={`https://d1cz9ginvjihcr.cloudfront.net`}
+                    />
+                  </Container>
+                </Grid>
               </Grid>
-            </ContainerBorder>
-            <ContainerBorder title="Note" width="49%" height="100%">
-              <TextField
-                sx={{ width: "50%" }}
-                label="Custom Note"
-                type="text"
-                placeholder="Note"
-                fullWidth
-                variant="filled"
-                color="primary"
-                name="note"
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-              />
-            </ContainerBorder>
+            </Grid>
+            <Grid item md={12} xs={12} sx={{ height: { md: "50%" } }}>
+              <Grid container >
+                <Grid item md={4} xs={12} p={2}>
+                  <Container
+                    sx={{
+                      bgcolor: "#2E313D",
+                      borderRadius: 4,
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      position: "relative",
+                      p: 3,
+                    }}
+                  >
+                    <Typography sx={{ position: "absolute", top: "5px" }}>
+                      ICON
+                    </Typography>
+                    <DropzoneInput
+                      setSelectedFile={setSelectedFileIcon}
+                      previewIcon={icon}
+                    />
+                  </Container>
+                </Grid>
+                <Grid item md={8} xs={12} p={2} >
+                  <Container
+                    sx={{
+                      bgcolor: "#2E313D",
+                      borderRadius: 4,
+                      height: "100%",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      p: 3,
+                    }}
+                  >
+                    <Grid container height={"100%"}>
+                      <Grid
+                        item
+                        display={"flex"}
+                        alignItems={"center"}
+                        md={12}
+                        sx={{ width: "100%", height: { md: "50%" } }}
+                      >
+                        <Grid container>
+                          <Grid item xs={12} md={6}>
+                            <Container
+                              sx={{
+                                position: "relative",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                p: 3,
+                              }}
+                            >
+                              <Typography
+                                sx={{ position: "absolute", top: "5px" }}
+                              >
+                                OPENING
+                              </Typography>
+                              <TimePickerComponent
+                                value={opening}
+                                setValue={setOpening}
+                              />
+                            </Container>
+                          </Grid>
+                          <Grid item xs={12} md={6}>
+                            <Container
+                              sx={{
+                                position: "relative",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                p: 3,
+                              }}
+                            >
+                              <Typography
+                                sx={{ position: "absolute", top: "5px" }}
+                              >
+                                CLOSING
+                              </Typography>
+                              <TimePickerComponent
+                                value={closing}
+                                setValue={setClosing}
+                              />
+                            </Container>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                      <Grid
+                        item
+                        display={"flex"}
+                        alignItems={"center"}
+                        md={12}
+                        sx={{ width: "100%", height: { md: "50%" } }}
+                      >
+                        <Container
+                          sx={{
+                            position: "relative",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            p: 3,
+                          }}
+                        >
+                          <Typography sx={{ position: "absolute", top: "5px" }}>
+                            CUSTOM NOTE
+                          </Typography>
+                          <InputText
+                            type="text"
+                            placeholder="Custom Note"
+                            name="note"
+                            value={note}
+                            onChange={(e) => setNote(e.target.value)}
+                          />
+                        </Container>
+                      </Grid>
+                    </Grid>
+                  </Container>
+                </Grid>
+              </Grid>
+            </Grid>
           </Grid>
         </Grid>
-      </Container>
+      )}
     </ClubeLayout>
   );
 };

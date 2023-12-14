@@ -1,16 +1,14 @@
 import { IClub } from "@/clube/interfaces";
 import { clubProfilePath } from "@/constants";
 import { useRedirectTo } from "@/hooks";
-import useFetchAndLoad from "@/hooks/useFetchAndLoad";
-
 import { setActiveClub } from "@/store/club/clubSlice";
-import { Card, CardMedia, Grid } from "@mui/material";
+import { Avatar, Card, Grid } from "@mui/material";
 import { useDispatch } from "react-redux";
 
-const ClubCard = ({ club }) => {
-  const { id, icon } = club;
+const ClubCard = ({ club }: { club: IClub }) => {
   const dispatch = useDispatch();
   const redirectTo = useRedirectTo();
+
   const handleItem = async () => {
     dispatch(setActiveClub(club));
     redirectTo(clubProfilePath);
@@ -19,31 +17,36 @@ const ClubCard = ({ club }) => {
   return (
     <Grid
       item
-      xs={12}
-      sm={4}
-      key={id}
+      xs={6}
+      sm={3}
       onClick={handleItem}
-      sx={{ mt: 2, display: "flex", justifyContent: "center" }}
+      sx={{
+        width: "100%",
+        height: "60%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        p: 1
+      }}
     >
       <Card
-        variant="outlined"
         sx={{
-          backgroundColor: "primary.main",
-          height: "40vh",
-          width: "70%",
           display: "flex",
-          justifyContent: "center",
           alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          width: "90%",
+          borderRadius: "25%",
+          bgcolor:'#71718A'
         }}
       >
-        <CardMedia
-          component="img"
-          image={icon}
+        <Avatar
+          src={club.icon}
           alt="Club Icon"
           sx={{
-            height: "50%",
-            width: "70%",
-            objectFit: "contain",
+            objectFit: "cover",
+            width: 100,
+            height: 100,
           }}
         />
       </Card>

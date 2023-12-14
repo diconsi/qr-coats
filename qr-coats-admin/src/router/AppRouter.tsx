@@ -1,11 +1,12 @@
 import AuthRoutes from "@/auth/routes/AuthRoutes";
 import ClubesRoutes from "@/clube/routes/ClubesRoutes";
+import { useAppSelector } from "@/hooks";
 import { CheckingAuth } from "@/ui";
-import { useSelector } from "react-redux";
+
 import { Navigate, Route, Routes } from "react-router-dom";
 
 const AppRouter = () => {
-  const { status } = useSelector((store) => store.authState);
+  const { status } = useAppSelector((store) => store.authState);
 
   if (status === "checking") {
     return <CheckingAuth />;

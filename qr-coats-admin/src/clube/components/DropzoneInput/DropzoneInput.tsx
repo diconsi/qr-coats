@@ -1,61 +1,149 @@
-import { Dropzone, FileMosaic } from "@files-ui/react";
-import { Grid } from "@mui/material";
-import { useState } from "react";
-const DropzoneInput = ({ previewIcon, setSelectedFile }) => {
-  const [files, setFiles] = useState([]);
+// import { Dropzone, ExtFile, FileMosaic } from "@files-ui/react";
+// import { FC, useEffect, useState } from "react";
 
-  const updateFiles = (incommingFiles) => {
-    setSelectedFile(incommingFiles[0].file);
-    setFiles(incommingFiles);
+// interface DropzoneInputProps {
+//   previewIcon: string;
+//   setSelectedFile: (file: File | null) => void;
+// }
+// const DropzoneInput: FC<DropzoneInputProps> = ({
+//   previewIcon,
+//   setSelectedFile,
+// }) => {
+//   const [files, setFiles] = useState<ExtFile[]>([]);
+//   const [dropzoneKey, setDropzoneKey] = useState(0);
+
+//   const updateFiles = (incomingFiles: ExtFile[] | undefined) => {
+//     setDropzoneKey((prevKey) => prevKey + 1);
+//     if (incomingFiles && incomingFiles.length > 0 && incomingFiles[0].file) {
+//       setSelectedFile(incomingFiles[0].file);
+//       setFiles(incomingFiles);
+//     }
+//   };
+
+//   const removeFile = (id: string | number | undefined) => {
+//     setFiles(files.filter((x) => x.id !== id));
+//     setSelectedFile(null);
+//   };
+
+//   useEffect(() => {
+//     const previewFile: ExtFile = {
+//       id: "preview",
+//       name: "Preview",
+//       imageUrl: previewIcon,
+//     };
+
+//     setFiles([previewFile]);
+//   }, []);
+
+//   return (
+//     <Dropzone
+//       key={dropzoneKey}
+//       style={{
+//         display: "flex",
+//         justifyContent: "center",
+//         alignItems: "center",
+//         height: "100%",
+//         width: "100%",
+//         border: "none",
+//       }}
+//       onChange={updateFiles}
+//       value={files}
+//       footer={false}
+//       header={false}
+//       maxFiles={1}
+//     >
+//       {files.map((file) => {
+//         return (
+//           <FileMosaic
+//             style={{
+//               height: "100%",
+//               width: "90%",
+//             }}
+//             key={file.id}
+//             {...file}
+//             backgroundBlurImage={false}
+//             preview={true}
+//           />
+//         );
+//       })}
+//     </Dropzone>
+//   );
+// };
+
+// export default DropzoneInput;
+
+import { Dropzone, ExtFile, FileMosaic } from "@files-ui/react";
+import { FC, useEffect, useState } from "react";
+interface DropzoneInputProps {
+  previewIcon: string;
+  setSelectedFile: (file: File) => void;
+}
+const DropzoneInput: FC<DropzoneInputProps> = ({
+  previewIcon,
+  setSelectedFile,
+}) => {
+  const [files, setFiles] = useState<ExtFile[]>([]);
+  const [dropzoneKey, setDropzoneKey] = useState(0);
+
+  useEffect(() => {
+    if (files.length === 0) {
+      const previewFile: ExtFile = {
+        id: "preview",
+        name: "Preview",
+        imageUrl: previewIcon,
+      };
+
+      setFiles([previewFile]);
+    }
+  }, [files, previewIcon]);
+
+  const updateFiles = (incomingFiles: ExtFile[]) => {
+    if (incomingFiles && incomingFiles.length > 0) {
+      const image =
+        incomingFiles.length === 2 ? incomingFiles[1] : incomingFiles[0];
+      if (image.file) {
+        setFiles([image]);
+        setSelectedFile(image.file);
+        setDropzoneKey((prevKey) => prevKey + 1);
+      }
+    }
   };
 
-  const removeFile = (id) => {
-    setFiles(files.filter((x) => x.id !== id));
-  };
-
-  const renderPreview = () => {
-    return (
-      <Grid
-        container
-        sx={{ background: "primary.main", maxWidth: "100%", maxHeight: "100%" }}
-      >
-        <img width={200} height={100} src={previewIcon} />
-      </Grid>
-    );
+  const removeFile = (id: string | number | undefined) => {
+    setFiles(files.filter((x: ExtFile) => x.id !== id));
   };
 
   return (
     <Dropzone
-      style={{
-        height: "100%",
-        minHeight: "90%",
-        width: "80%",
-        border: "none",
-      }}
-      label={renderPreview()}
+      key={dropzoneKey}
       onChange={updateFiles}
       value={files}
+      accept="image/*"
+      maxFiles={1}
       footer={false}
       header={false}
-      maxFiles={1}
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100%",
+        width: "100%",
+        border: "none",
+      }}
     >
-      {files.map((file) => (
+      {files.map((file: ExtFile) => (
         <FileMosaic
           style={{
-            height: "100%",
-            minHeight: "50% !important",
-            width: "40%",
             display: "flex",
             justifyContent: "center",
-            alignItems: "center",
-            flexDirection: "column",
+            height: "100%",
+            width: "90%",
           }}
           key={file.id}
           {...file}
-          onDelete={removeFile}
           backgroundBlurImage={false}
-          preview={previewIcon}
-          alwaysActive={false}
+          preview={true}
+          onDelete={removeFile}
         />
       ))}
     </Dropzone>

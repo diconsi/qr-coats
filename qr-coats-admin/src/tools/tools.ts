@@ -1,38 +1,34 @@
-import { filter } from "lodash";
 
-export const loadAbort=()=>{
+export const loadAbort = () => {
   const controller = new AbortController();
   return controller;
+};
+
+interface ValidationRules {
+  [key: string]: (value: string) => boolean;
 }
 
-export const descendingComparator = (a, b, orderBy) => {
-  if (b[orderBy] < a[orderBy]) {
-    return -1;
-  }
-  if (b[orderBy] > a[orderBy]) {
-    return 1;
-  }
-  return 0;
-};
+interface EvaluatedStatus {
+  [key: string]: string;
+}
 
-export const getComparator = (order, orderBy) => {
-  return order === "desc"
-    ? (a, b) => descendingComparator(a, b, orderBy)
-    : (a, b) => -descendingComparator(a, b, orderBy);
-};
+interface Errors {
+  [key: string]: string;
+}
 
-export const applySortFilter = (array, comparator, query) => {
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-  if (query) {
-    return filter(
-      array,
-      (_user) => _user.name.toLowerCase().indexOf(query.toLowerCase()) !== -1
-    );
-  }
-  return stabilizedThis.map((el) => el[0]);
+export const stateValidator = (
+  evaluatedStatus: EvaluatedStatus,
+  validationRules: ValidationRules
+): Errors => {
+  const newErrors: Errors = Object.keys(evaluatedStatus).reduce((acc, key) => {
+    if (!validationRules[key](evaluatedStatus[key])) {
+      return {
+        ...acc,
+        [key]: `${key.charAt(0).toUpperCase() + key.slice(1)} is required.`,
+      };
+    }
+    return acc;
+  }, {});
+
+  return newErrors;
 };

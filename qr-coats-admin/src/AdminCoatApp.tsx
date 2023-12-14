@@ -5,7 +5,7 @@ import { PersistGate } from "redux-persist/integration/react";
 import { AppRouter } from "./router";
 
 import { AppTheme } from "./theme";
-import store from "./store/store";
+import { store } from "./store/store";
 const persistor = persistStore(store);
 
 function AdminCoatApp() {

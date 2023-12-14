@@ -1,3 +1,21 @@
+body {
+  background-color: #2e2f47 !important;
+}
+
+@font-face {
+  font-family: "AttenBold";
+  src: url("/fonts/AttenRoundNewBold.otf") format("opentype"); /* Ruta a tu archivo de fuente */
+  font-weight: bold;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "AttenRound";
+  src: url("/fonts/AttenRoundNewRegular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 .box-shadow {
   box-shadow: 0px 5px 5px rgba(0, 0, 0, 0.2);
 }
@@ -65,4 +83,74 @@
     height: 80% !important;
     width: 100% !important;
   }
+}
+
+.transparentDataTable {
+  background: transparent !important;
+}
+
+.timer-picker {
+  border-radius: 30px !important;
+  border: 2px solid #b8bcfe !important;
+  margin-right: px !important;
+  color: white;
+  font-family: "AttenBold";
+}
+
+.react-ios-time-picker-btn-container {
+  background: #2e2f47 !important;
+  color: white !important;
+  font-family: "AttenBold";
+}
+
+.react-ios-time-picker-container {
+  background: #2e2f47 !important;
+  color: white !important;
+  font-family: "AttenBold";
+}
+
+.react-ios-time-picker-btn {
+  color: white !important;
+  background: linear-gradient(to bottom, #a482f2, #8cabf0) !important;
+  border-radius: 30px;
+  border: 2px solid #816cb5;
+}
+
+.react-ios-time-picker-selected-overlay {
+  background-color: #b8bcfe !important;
+}
+
+#react-qrcode-logo {
+  width: 50% !important;
+  height: 90% !important;
+}
+
+.files-ui-file-mosaic-file-name {
+  display: none !important;
+}
+
+.mantine-19icnej,
+.mantine-bsgx94,
+.css-6hp17o-MuiList-root-MuiMenu-list {
+  background-color: #2e313d !important;
+  color: white !important;
+  font-family: "Arial Bold", sans-serif;
+}
+
+.css-2k4e2i-MuiButtonBase-root-MuiMenuItem-root:hover {
+  background-color: #b8bcfe !important;
+}
+
+.css-3uqx4v-MuiInputBase-root-MuiOutlinedInput-root-MuiSelect-root {
+  color: white !important;
+}
+
+.mantine-t91jkm,
+.modal-title {
+  font-family: "AttenBold";
+}
+
+
+.MuiFormControlLabel-label.Mui-disabled{
+  color: white !important;
 }

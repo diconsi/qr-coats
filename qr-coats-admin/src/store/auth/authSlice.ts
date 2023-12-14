@@ -3,13 +3,13 @@ const authSlice = createSlice({
   name: "auth",
   initialState: {
     status: "not-authenticated", // 'checking', 'not-authenticated', 'authenticated'
-    uid: null,
-    email: null,
-    userName: null,
-    name: null,
-    access_token: null,
-    photoURL: null,
-    errorMessage: null,
+    uid: "",
+    email: "",
+    userName: "",
+    name: "",
+    access_token: "",
+    photoURL: "",
+    errorMessage: "",
     openSidebar: false,
   },
   reducers: {
@@ -23,8 +23,8 @@ const authSlice = createSlice({
     },
     logout: (state, { payload }) => {
       state.status = "not-authenticated";
-      state.uid = null;
-      state.email = null;
+      state.uid = "";
+      state.email = "";
       state.errorMessage = payload?.errorMessage;
     },
     checkingCredentials: (state) => {

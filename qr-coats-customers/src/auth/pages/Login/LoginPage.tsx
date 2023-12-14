@@ -1,8 +1,3 @@
-import { ChangeEvent, useEffect, useState } from "react";
-import { Link as RouterLink } from "react-router-dom";
-import { Alert, Grid, Link, Typography } from "@mui/material";
-import HttpsIcon from "@mui/icons-material/HttpsOutlined";
-import PersonIcon from "@mui/icons-material/PersonOutlined";
 import { AuthLayout } from "@/auth/layout";
 import { CustomButton, InputText } from "@/clube/components";
 import { resgiterPath } from "@/constants";
@@ -10,6 +5,11 @@ import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
 import { signIn } from "@/services";
 import { login, setErrorMessage } from "@/store/auth/authSlice";
 import { stateValidator } from "@/tools";
+import HttpsIcon from "@mui/icons-material/HttpsOutlined";
+import PersonIcon from "@mui/icons-material/PersonOutlined";
+import { Alert, Grid, Link, Typography } from "@mui/material";
+import { ChangeEvent, useEffect, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 interface UserData {
   rol: string;
@@ -36,11 +36,12 @@ const validationRules: ValidationRules = {
 };
 
 const LoginPage: React.FC = () => {
+  const { errorMessage } = useAppSelector((store) => store.authState);
   const dispatch = useAppDispatch();
   const { callEndpoint } = useFetchAndLoad();
+
   const [userState, setUserState] = useState<UserState>(initialState);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const { errorMessage } = useAppSelector((store) => store.authState);
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {

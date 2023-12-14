@@ -1,14 +1,14 @@
-import { logout, setViewSidebar } from "@/store/auth/authSlice";
-import { LogoutOutlined, MenuOutlined } from "@mui/icons-material";
+import { useAppDispatch } from "@/hooks";
+import { setViewSidebar } from "@/store/auth/authSlice";
+import { MenuOutlined } from "@mui/icons-material";
 import { AppBar, Grid, IconButton, Toolbar, Typography } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
-const NavBar = ({ drawerWidth }) => {
-  const { activeClub } = useSelector((store) => store.clubState);
+import { FC } from "react";
+interface INavBar {
+  drawerWidth: number;
+}
 
-  const dispatch = useDispatch();
-  const onLogout = () => {
-    dispatch(logout({}));
-  };
+const NavBar: FC<INavBar> = ({ drawerWidth }) => {
+  const dispatch = useAppDispatch();
 
   const onSidebar = () => {
     dispatch(setViewSidebar());
@@ -20,7 +20,8 @@ const NavBar = ({ drawerWidth }) => {
       sx={{
         width: "100%",
         ml: `${drawerWidth}px)`,
-        height: "10vh",
+        height: "8vh",
+        bgcolor: "#2C313F",
       }}
     >
       <Toolbar>
@@ -37,9 +38,6 @@ const NavBar = ({ drawerWidth }) => {
           <Typography variant="h6" textAlign="center" noWrap component="div">
             QR COATS ADMIN
           </Typography>
-          <IconButton color="error" onClick={onLogout}>
-            <LogoutOutlined />
-          </IconButton>
         </Grid>
       </Toolbar>
     </AppBar>

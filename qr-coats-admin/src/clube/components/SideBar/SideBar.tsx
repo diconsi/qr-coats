@@ -5,15 +5,15 @@ import {
   clubSettingsPath,
   homeClubesPath,
 } from "@/constants";
-import { useRedirectTo } from "@/hooks";
-import { setViewSidebar } from "@/store/auth/authSlice";
-import SettingsIcon from "@mui/icons-material/SettingsOutlined";
-import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
-import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
-import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import { useAppDispatch, useAppSelector, useRedirectTo } from "@/hooks";
+import { logout, setViewSidebar } from "@/store/auth/authSlice";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
+import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
+import PowerIcon from "@mui/icons-material/PowerSettingsNewOutlined";
+import SettingsIcon from "@mui/icons-material/SettingsOutlined";
 import {
-  Avatar,
   Box,
   Divider,
   Drawer,
@@ -24,28 +24,33 @@ import {
   ListItemIcon,
   ListItemText,
   Toolbar,
-  Typography,
 } from "@mui/material";
-import { useDispatch, useSelector } from "react-redux";
+import { FC } from "react";
 
-const SideBar = ({ drawerWidth }) => {
-  const dispatch = useDispatch();
+interface ISidebar {
+  drawerWidth: number;
+}
+
+const SideBar: FC<ISidebar> = ({ drawerWidth }) => {
+  const dispatch = useAppDispatch();
+  const { openSidebar } = useAppSelector((store) => store.authState);
   const redirectTo = useRedirectTo();
-  const { openSidebar, displayName, photoURL } = useSelector(
-    (store) => store.authState
-  );
 
-  const { activeClub } = useSelector((store) => store.clubState);
-
-  const toggleDrawer = () => {
-    dispatch(setViewSidebar());
-  };
+  const { activeClub } = useAppSelector((store) => store.clubState);
 
   const handleMenutItem = (pagePath: string) => {
     redirectTo(pagePath);
     toggleDrawer();
   };
 
+  const toggleDrawer = () => {
+    dispatch(setViewSidebar());
+  };
+
+  const onLogout = () => {
+    dispatch(setViewSidebar());
+    dispatch(logout({}));
+  };
   return (
     <Box component="nav" sx={{ flexShrink: { sm: 0 } }}>
       <Drawer
@@ -53,53 +58,95 @@ const SideBar = ({ drawerWidth }) => {
         onClose={toggleDrawer}
         sx={{
           display: { xs: "block" },
-          "& .MuiDrawer-paper": { boxSizing: "border-box", width: drawerWidth },
+          "& .MuiDrawer-paper": {
+            boxSizing: "border-box",
+            width: drawerWidth,
+            bgcolor: "#2C313F",
+          },
         }}
       >
-        <Toolbar sx={{ display: "flex", flexDirection: "column", m: 2 }}>
-          <Avatar src={photoURL} sx={{ width: 56, height: 56 }} />
-          <Typography noWrap>{displayName}</Typography>
-        </Toolbar>
+        <Toolbar
+          sx={{ display: "flex", flexDirection: "column", m: 2 }}
+        ></Toolbar>
         <Divider />
         <List>
           {[
             {
-              label: "Home",
+              label: "HOME",
               path: homeClubesPath,
-              icon: <DashboardOutlinedIcon />,
+              icon: (
+                <DashboardOutlinedIcon
+                  fontSize="medium"
+                  sx={{ color: "white" }}
+                />
+              ),
             },
             {
-              label: "Profile",
+              label: "PROFILE",
               path: clubProfilePath,
-              icon: <ManageAccountsOutlinedIcon />,
+              icon: (
+                <ManageAccountsOutlinedIcon
+                  fontSize="medium"
+                  sx={{ color: "white" }}
+                />
+              ),
             },
             {
-              label: "Employees",
+              label: "EMPLOYEES",
               path: clubEmployessPath,
-              icon: <GroupOutlinedIcon />,
+              icon: (
+                <GroupOutlinedIcon fontSize="medium" sx={{ color: "white" }} />
+              ),
             },
             {
-              label: "Locations",
+              label: "LOCATIONS",
               path: clubLocationsPath,
-              icon: <MapOutlinedIcon />,
+              icon: (
+                <MapOutlinedIcon fontSize="medium" sx={{ color: "white" }} />
+              ),
             },
             {
-              label: "Settings",
+              label: "SETTINGS",
               path: clubSettingsPath,
-              icon: <SettingsIcon />,
+              icon: <SettingsIcon fontSize="medium" sx={{ color: "white" }} />,
             },
           ].map((item) => {
             return activeClub || item.label == "Employees" ? (
               <ListItem key={item.label} disablePadding>
-                <ListItemButton onClick={() => handleMenutItem(item.path)}>
+                <ListItemButton
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: "#B8BCFE",
+                    },
+                  }}
+                  onClick={() => handleMenutItem(item.path)}
+                >
                   <ListItemIcon>{item.icon}</ListItemIcon>
                   <Grid container>
-                    <ListItemText primary={item.label} />
+                    <ListItemText
+                      sx={{ marginLeft: "-20px" }}
+                      primary={item.label}
+                    />
                   </Grid>
                 </ListItemButton>
               </ListItem>
             ) : null;
           })}
+          <ListItemButton
+            sx={{
+              "&:hover": {
+                backgroundColor: "#B8BCFE",
+              },
+            }}
+            onClick={onLogout}
+          >
+            <ListItemIcon>
+              <PowerIcon fontSize="medium" sx={{ color: "white" }} />
+            </ListItemIcon>
+            <Grid container>
+              <ListItemText sx={{ marginLeft: "-20px" }} primary={"LOGOUT"} />
+            </Grid>
+          </ListItemButton>
         </List>
       </Drawer>
     </Box>

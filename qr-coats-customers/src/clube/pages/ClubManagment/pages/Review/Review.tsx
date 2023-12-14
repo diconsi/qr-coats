@@ -155,7 +155,7 @@ const Review: FC<ReviewProps> = ({ setActiveStep }) => {
                       logoHeight={40}
                       logoWidth={35}
                       logoPadding={1}
-                      value={`${qr.orderId}/${qr._id}`}
+                      value={`${qr.orderId}-${qr._id}`}
                       enableCORS={true}
                     />
                     <Typography

@@ -1,10 +1,18 @@
-import { ModalComponent, TableList } from "@/clube/components";
+import {
+  CustomButton,
+  HeaderSectionPage,
+  InputText,
+  ModalComponent,
+  TableList,
+} from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
 import {
   deleteLocation,
   editLocation,
+  location,
   newLocation,
 } from "@/constants/locations";
+import { useAppSelector } from "@/hooks";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
 import {
   createLocation,
@@ -15,22 +23,19 @@ import {
   addLocation,
   deleteLocationById,
   setLocations,
-  updateLocation,
 } from "@/store/location/locationSlice";
 import { ActionIcon, Group } from "@mantine/core";
 import { DeleteOutline, EditOutlined } from "@mui/icons-material";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import {
-  Container,
   FormControl,
   Grid,
-  InputLabel,
   MenuItem,
   Select,
-  TextField,
+  SelectChangeEvent,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 const initialState = {
   locationType: "",
   name: "",
@@ -38,11 +43,12 @@ const initialState = {
   numberSlots: 0,
 };
 const Location = () => {
-  const { locations } = useSelector((store) => store.locationState);
-  const { access_token } = useSelector((store) => store.authState);
+  const { locations } = useAppSelector((store) => store.locationState);
+  const { access_token } = useAppSelector((store) => store.authState);
   const {
-    activeClub: { slotsActive, numberLocations, name: clubName, _id },
-  } = useSelector((store) => store.clubState);
+    activeClub: { slotsActive, numberLocations, _id },
+  } = useAppSelector((store) => store.clubState);
+
   useEffect(() => {
     init();
   }, []);
@@ -56,7 +62,7 @@ const Location = () => {
   const [showModal, setShowModal] = useState(false);
   const [titleModal, setTitleModal] = useState("");
   const [state, setState] = useState(initialState);
-  const [activeLocation, setActiveLocation] = useState({});
+  const [activeLocation, setActiveLocation] = useState("");
   const disableButton =
     locations.length !== 0 ? locations.length < numberLocations : false;
 
@@ -73,10 +79,23 @@ const Location = () => {
     });
   };
 
-  const handleActioModal = (titleModal: string, location: any) => {
-    if (location !== undefined) setActiveLocation(location);
+  const onChangeSelect = (event: SelectChangeEvent<string>) => {
+    setState({
+      ...state,
+      [event.target.name]: event.target.value,
+    });
+  };
+
+  const handleActioModal = (
+    titleModal: string,
+    locationType: string = "",
+    name: string = "",
+    numberOfHangers: number = 0,
+    numberSlots: number = 0,
+    _id: string = ""
+  ) => {
+    if (location !== undefined) setActiveLocation(_id);
     if (titleModal === editLocation) {
-      const { locationType, name, numberOfHangers, numberSlots } = location;
       setState({ ...state, locationType, name, numberOfHangers, numberSlots });
     }
     setTitleModal(titleModal);
@@ -86,37 +105,65 @@ const Location = () => {
   const onClosedModal = () => {
     setShowModal(false);
     setState(initialState);
-    setActiveLocation({});
+    setActiveLocation("");
   };
   const columns = [
-    { accessor: "name", title: "Location", textAlignment: "center" },
-    { accessor: "locationType", title: "Type", textAlignment: "center" },
-    { accessor: "numberSlots", title: "Number Slots", textAlignment: "center" },
+    { accessor: "name", title: "LOCATION", textAlignment: "center" },
+    { accessor: "locationType", title: "TYPE", textAlignment: "center" },
+    { accessor: "numberSlots", title: "NUMBER SLOTS", textAlignment: "center" },
     {
       accessor: "numberOfHangers",
-      title: "Number Hangers",
+      title: "NUMBER HANGERS",
       textAlignment: "center",
     },
     {
       accessor: "acciones",
-      title: "Acciones",
+      title: "ACTIONS",
       textAlignment: "center",
-      render: (row) => renderOpcion(row),
+      render: ({
+        locationType,
+        name,
+        numberOfHangers,
+        numberSlots,
+        _id,
+      }: {
+        locationType: string;
+        name: string;
+        numberOfHangers: number;
+        numberSlots: number;
+        _id: string;
+      }) => renderOpcion(locationType, name, numberOfHangers, numberSlots, _id),
     },
   ];
 
-  const renderOpcion = (row) => {
+  const renderOpcion = (
+    locationType: string,
+    name: string,
+    numberOfHangers: number,
+    numberSlots: number,
+    _id: string
+  ) => {
     return (
       <Group spacing={4} position="center" noWrap>
         <ActionIcon
           color="blue"
-          onClick={() => handleActioModal(editLocation, row)}
+          onClick={() =>
+            handleActioModal(
+              editLocation,
+
+              locationType,
+              name,
+              numberOfHangers,
+              numberSlots,
+              _id
+            )
+          }
         >
           <EditOutlined />
         </ActionIcon>
         <ActionIcon
           color="red"
-          onClick={() => handleActioModal(deleteLocation, row)}
+          onClick={() => handleActioModal(deleteLocation, _id)}
         >
           <DeleteOutline />
         </ActionIcon>
@@ -145,7 +192,7 @@ const Location = () => {
 
   const onDeletedLocation = async () => {
     const resp = await callEndpoint(
-      eliminaLocation(activeLocation._id, { status: false }, access_token)
+      eliminaLocation(activeLocation, { status: false }, access_token)
     );
 
     const {
@@ -153,7 +200,7 @@ const Location = () => {
       data: { _id },
     } = resp;
     if (status === 200) {
-      setActiveLocation({});
+      setActiveLocation("");
       dispatch(deleteLocationById(_id));
       onClosedModal();
     }
@@ -191,31 +238,37 @@ const Location = () => {
       <>
         {titleModal === deleteLocation ? (
           <Grid item sx={{ width: "100%" }}>
-            Realmente quiere eliminar <strong>el location!</strong>
+            You really want to remove <strong>the location!</strong>
           </Grid>
         ) : (
           <Grid container>
             <Grid item mt={1} md={12}>
-              <TextField
-                fullWidth
+              <InputText
                 type="text"
-                label="Name"
                 placeholder="Name Location"
-                value={state.name}
-                id="name"
                 name="name"
+                value={state.name}
                 onChange={onChange}
               />
             </Grid>
             <Grid item mt={1} md={12} sx={{ pr: 0.5 }}>
               <FormControl sx={{ width: "100%" }}>
-                <InputLabel>Type</InputLabel>
                 <Select
                   value={state.locationType}
-                  onChange={onChange}
+                  onChange={onChangeSelect}
                   id="locationType"
                   name="locationType"
                   label="Type"
+                  sx={{
+                    borderRadius: "30px",
+                    border: "2px solid #B8BCFE",
+                    "& .css-11u53oe-MuiSelect-select-MuiInputBase-input-MuiOutlinedInput-input":
+                      {
+                        paddingTop: "10px",
+                        paddingBottom: "10px",
+                        color: "white",
+                      },
+                  }}
                 >
                   <MenuItem value="">
                     <em>Seleccionar</em>
@@ -228,12 +281,9 @@ const Location = () => {
             {state.locationType !== "Entry" && (
               <>
                 <Grid item mt={1} md={6}>
-                  <TextField
-                    fullWidth
-                    label="Hangers"
-                    type="number"
+                  <InputText
                     placeholder="Hangers"
-                    id="numberOfHangers"
+                    type="number"
                     name="numberOfHangers"
                     value={state.numberOfHangers}
                     onChange={onChange}
@@ -241,27 +291,20 @@ const Location = () => {
                       min: 0,
                       step: 1,
                     }}
-                    variant="outlined"
-                    sx={{ pr: 0.5 }}
                   />
                 </Grid>
                 <Grid item mt={1} md={6}>
-                  <TextField
-                    fullWidth
-                    sx={{ pl: 0.5 }}
-                    label="Slots"
-                    type="number"
+                  <InputText
                     placeholder="Slots"
-                    id="numberSlots"
+                    type="number"
                     name="numberSlots"
                     value={state.numberSlots}
-                    disabled={!slotsActive}
+                    disabled={slotsActive}
                     onChange={onChange}
                     inputProps={{
                       min: 0,
                       step: 1,
                     }}
-                    variant="outlined"
                   />
                 </Grid>
               </>
@@ -272,27 +315,61 @@ const Location = () => {
     );
   };
 
+  const renderFooter = () => {
+    return (
+      <Grid container justifyContent={"end"}>
+        <CustomButton
+          fullWidth={false}
+          label="CANCEL"
+          onClick={onClosedModal}
+        />
+        <CustomButton
+          style={{ marginLeft: "5px" }}
+          fullWidth={false}
+          label="OK"
+          onClick={onSave}
+          background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+        />
+      </Grid>
+    );
+  };
+
+  const handleNewLocation = () => {
+    handleActioModal(newLocation);
+  };
+
   return (
     <ClubeLayout>
-      <Container sx={{ height: "80%", maxWidth: "100% !important" }}>
-        <TableList
-          title={newLocation}
-          titleButton={newLocation}
-          iconHeaderSection={<MapOutlinedIcon />}
-          data={locations}
-          disableButton={disableButton}
-          columns={columns}
-          handleActioModal={handleActioModal}
-        />
-        <ModalComponent
-          title={titleModal}
-          center
-          body={renderBody()}
-          showModal={showModal}
-          onClose={onClosedModal}
-          onSave={onSave}
-        />
-      </Container>
+      <Grid container sx={{ height: "100%", width: "100%", p: 2 }}>
+        <Grid
+          display="flex"
+          alignItems={"center"}
+          justifyContent={"center"}
+          width={"100%"}
+          height={"10%"}
+          item
+          p={2}
+        >
+          <HeaderSectionPage
+            title={location.toUpperCase()}
+            titleButton={newLocation}
+            onClick={handleNewLocation}
+            icon={<MapOutlinedIcon />}
+            disableButton={disableButton}
+          />
+        </Grid>
+        <Grid container sx={{ height: "90%", width: "100%", p: 2 }}>
+          <TableList data={locations} columns={columns} />
+          <ModalComponent
+            title={titleModal}
+            center
+            body={renderBody()}
+            showModal={showModal}
+            onHide={onClosedModal}
+            footer={renderFooter()}
+          />
+        </Grid>
+      </Grid>
     </ClubeLayout>
   );
 };

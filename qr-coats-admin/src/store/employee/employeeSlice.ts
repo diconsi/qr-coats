@@ -2,18 +2,27 @@ import { createSlice } from "@reduxjs/toolkit";
 const employeeSlice = createSlice({
   name: "employee",
   initialState: {
-    employees: [],
-    activeEmployee: null,
+    employees: [
+      {
+        _id: "",
+        name: "",
+        username: "",
+        email: "",
+        password: "",
+        rol: "employee",
+        gender: "",
+        status: true,
+        clubes: [],
+        employees: [],
+      },
+    ],
   },
   reducers: {
     setEmployees: (state, action) => {
       state.employees = action.payload;
     },
     addEmployee: (state, action) => {
-      state.employees.push(action.payload);
-    },
-    setActiveEmployee: (state, action) => {
-      state.activeEmployee = action.payload;
+      state.employees = [...state.employees, action.payload];
     },
     updateEmployee: (state, action) => {
       const updatedEmployeeIndex = state.employees.findIndex(
@@ -35,12 +44,7 @@ const employeeSlice = createSlice({
   },
 });
 
-export const {
-  setEmployees,
-  addEmployee,
-  setActiveEmployee,
-  updateEmployee,
-  deleteEmployeeById,
-} = employeeSlice.actions;
+export const { setEmployees, addEmployee, updateEmployee, deleteEmployeeById } =
+  employeeSlice.actions;
 
 export default employeeSlice.reducer;

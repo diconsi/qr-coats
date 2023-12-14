@@ -1,24 +1,34 @@
 import { AxiosCall } from "@/models";
 import { useEffect, useState } from "react";
-import { AxiosResponse } from "axios";
+import { AxiosResponse, AxiosError } from "axios";
 
-const useFetchAndLoad = () => {
+interface FetchAndLoadResult<T> {
+  loading: boolean;
+  callEndpoint: (axiosCall: AxiosCall<T>) => Promise<AxiosResponse<T>>;
+  cancelEndpoint: () => void;
+}
+
+const useFetchAndLoad = <T>(): FetchAndLoadResult<T> => {
   const [loading, setLoading] = useState(false);
   let controller: AbortController;
 
-  const callEndpoint = async (axiosCall: AxiosCall<any>) => {
+  const callEndpoint = async (
+    axiosCall: AxiosCall<T>
+  ): Promise<AxiosResponse<T>> => {
     if (axiosCall.controller) controller = axiosCall.controller;
     setLoading(true);
-    let result = {} as AxiosResponse<any>;
+    let result = {} as AxiosResponse<T>;
     try {
+      await new Promise((resolve) => setTimeout(resolve, 500));
       result = await axiosCall.call;
-    } catch (error: any) {
+    } catch (error) {
       setLoading(false);
-      throw error;
+      throw error as AxiosError; 
     }
     setLoading(false);
     return result;
   };
+
 
   const cancelEndpoint = () => {
     setLoading(false);
@@ -31,7 +41,7 @@ const useFetchAndLoad = () => {
     };
   }, []);
 
-  return { loading, callEndpoint };
+  return { loading, callEndpoint, cancelEndpoint };
 };
 
 export default useFetchAndLoad;

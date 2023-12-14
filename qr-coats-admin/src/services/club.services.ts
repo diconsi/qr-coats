@@ -1,3 +1,4 @@
+import { currentEnpoint } from "@/constants";
 import { loadAbort } from "@/tools/tools";
 import axios from "axios";
 export interface mailDTO {
@@ -8,7 +9,7 @@ export interface mailDTO {
 export const getClubesByAdmin = (idAdmin: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`http://localhost:3000/api/v1/clube/getClubesByAdmin/${idAdmin}`, {
+    call: axios.get(`${currentEnpoint}api/v1/clube/getClubesByAdmin/${idAdmin}`, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -21,7 +22,7 @@ export const getClubesByAdmin = (idAdmin: string, accesToken: string) => {
 export const updateClube = (id: string, clubeData: any, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.put(`http://localhost:3000/api/v1/clube/${id}`, clubeData, {
+    call: axios.put(`${currentEnpoint}api/v1/clube/${id}`, clubeData, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,

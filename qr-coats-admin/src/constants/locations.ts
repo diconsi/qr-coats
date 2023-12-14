@@ -1,6 +1,7 @@
 export const newLocation = "Add Location";
 export const editLocation = "Edit Location";
 export const deleteLocation = "Delete Location";
+export const location = "Location";
 
 export const TABLE_HEAD = [
   { id: "name", label: "Name", alignRight: false },

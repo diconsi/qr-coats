@@ -3,7 +3,32 @@ const clubSlice = createSlice({
   name: "club",
   initialState: {
     clubes: [],
-    activeClub: null,
+    activeClub: {
+      _id: "",
+      name: "",
+      photo: "",
+      withGateway: false,
+      withGatewayPayment: false,
+      withCash: false,
+      customNote: "",
+      breakNumber: 0,
+      breakTime: 0,
+      icon: "",
+      iconQrVisible: false,
+      services: [{ enable: false, id: "", name: "", price: 0, status: false }],
+      informationGuest: {
+        email: false,
+        lastName: false,
+        name: false,
+        phone: false,
+      },
+      withInformationGuest: false,
+      customFields: [{ id: "", name: "" }],
+      closingHour: "",
+      openingHour: "",
+      slotsActive: false,
+      numberLocations: 0,
+    },
     serviceOrder: [],
   },
   reducers: {
@@ -13,21 +38,9 @@ const clubSlice = createSlice({
     setActiveClub: (state, action) => {
       state.activeClub = action.payload;
     },
-    addService: (state, action) => {
-      state.serviceOrder.push(action.payload);
-    },
-    resetServicesOrder: (state) => {
-      state.serviceOrder = [];
-    },
-    deleteServiceById: (state, action) => {
-      state.serviceOrder = state.serviceOrder.filter(
-        (service) => service.id !== action.payload
-      );
-    },
   },
 });
 
-export const { setClubes, setActiveClub, addService, resetServicesOrder, deleteServiceById } =
-  clubSlice.actions;
+export const { setClubes, setActiveClub } = clubSlice.actions;
 
 export default clubSlice.reducer;

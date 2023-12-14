@@ -1,29 +1,64 @@
+import fondo from "@/assets/loginWeb.png";
+import qrIcon from "@/assets/logoQrCoats.png";
 import { Grid, Typography } from "@mui/material";
-const AuthLayout = ({ children, title = "" }) => {
+import { FC, ReactNode } from "react";
+
+interface IAuth {
+  children: ReactNode;
+  title: string;
+}
+
+const AuthLayout: FC<IAuth> = ({ children, title = "" }) => {
+  const style = {
+    backgroundImage: `url(${fondo})`,
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+  };
   return (
-    <Grid
-      container
-      spacing={0}
-      direction="column"
-      alignItems={"center"}
-      justifyContent="center"
-      sx={{ minHeight: "100vh",backgroundColor: "primary.main", padding: 4}}
-    >
+    <Grid container style={style} width={"100vw"} height={"100vh"}>
       <Grid
-        item
-        className="box-shadow"
-        xs={3}
+        container
         sx={{
-          width: { md: 450 },
-          backgroundColor: "white",
-          padding: 3,
-          borderRadius: 2,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          height: "100%",
+          width: "100%",
         }}
       >
-        <Typography variant="h5" sx={{ mb: 1 }}>
-          {title}
-        </Typography>
-        {children}
+        <Grid
+          container
+          width={"50%"}
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            paddingLeft: 4,
+            paddingRight: 4,
+            textAlign: "center",
+          }}
+        >
+          <Grid display={"flex"} justifyContent={"center"} container mb={2}>
+            <img src={qrIcon} style={{ border: "none", width: "30%" }} />
+          </Grid>
+          <Grid
+            display={"flex"}
+            justifyContent={"center"}
+            alignItems={"center"}
+            width={"100%"}
+          >
+            <Typography
+              variant="h5"
+              sx={{
+                fontWeight: "bold !important",
+                color: "#B8BCFE",
+              }}
+            >
+              {title}
+            </Typography>
+          </Grid>
+          {children}
+        </Grid>
       </Grid>
     </Grid>
   );

@@ -8,7 +8,7 @@ export interface mailDTO {
 export const getClubes = (accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get("http://3.19.76.186:3000/api/v1/clube", {
+    call: axios.get("https://d21ln96nsulz10.cloudfront.net/api/v1/clube", {
       headers: {
         Authorization: `Bearer ${accesToken}`,
       },
@@ -21,7 +21,7 @@ export const getClubes = (accesToken: string) => {
 export const getKey = () => {
   const controller = loadAbort();
   return {
-    call: axios.get("http://3.19.76.186:3000/api/v1/stripe", {
+    call: axios.get("https://d21ln96nsulz10.cloudfront.net/api/v1/stripe", {
       signal: controller.signal,
     }),
     controller,
@@ -31,7 +31,7 @@ export const getKey = () => {
 export const createPaymentIntent = (payment: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post("http://3.19.76.186:3000/api/v1/stripe", payment, {
+    call: axios.post("https://d21ln96nsulz10.cloudfront.net/api/v1/stripe", payment, {
       signal: controller.signal,
     }),
     controller,
@@ -42,7 +42,7 @@ export const sendCustomEmail = (emailDTO: mailDTO, accesToken: string) => {
   const controller = loadAbort();
   return {
     call: axios.post(
-      "http://3.19.76.186:3000/api/v1/clube/sendCustomEmail",
+      "https://d21ln96nsulz10.cloudfront.net/api/v1/clube/sendCustomEmail",
       emailDTO,
       {
         headers: {

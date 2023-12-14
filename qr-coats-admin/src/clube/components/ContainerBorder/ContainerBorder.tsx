@@ -1,6 +1,15 @@
 import { Grid, Typography } from "@mui/material";
+import { FC, ReactNode } from "react";
 
-const ContainerBorder = ({
+interface IContainerBorder {
+  title?: string;
+  children: ReactNode;
+  width?: string;
+  height?: string;
+  padding?: string;
+}
+
+const ContainerBorder: FC<IContainerBorder> = ({
   title,
   children,
   width = "80%",
@@ -20,6 +29,7 @@ const ContainerBorder = ({
         width: { width },
         height: { height },
         padding: { padding },
+        bgcolor: "#2E313D",
       }}
     >
       <Typography
@@ -28,7 +38,6 @@ const ContainerBorder = ({
           position: "absolute",
           top: -6,
           transform: "translate(12px, -10px) scale(0.75)",
-          backgroundColor: "#fff",
         }}
       >
         {title}

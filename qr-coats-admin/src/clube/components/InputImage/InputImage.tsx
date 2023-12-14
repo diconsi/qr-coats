@@ -1,17 +1,25 @@
+import { FC, ChangeEvent } from "react";
 import { CardMedia, Grid, Input, Card } from "@mui/material";
-import { useState } from "react";
 
-const InputImage = ({
+interface InputImageProps {
+  previewImage: string | null;
+  setPreviewImage: (imageUrl: string | null) => void;
+  defaultIcon: string;
+  accept: string;
+  cardColor: string;
+  setSelectedFile: (file: File | null) => void; // Ajustar el tipo aquí
+}
+
+const InputImage: FC<InputImageProps> = ({
   previewImage,
   setPreviewImage,
   defaultIcon,
   accept,
   cardColor,
-  selectedFile,
   setSelectedFile,
 }) => {
-  const handleFileInputChange = (event) => {
-    const file = event.target.files[0];
+  const handleFileInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] || null;
     setSelectedFile(file);
 
     if (file) {

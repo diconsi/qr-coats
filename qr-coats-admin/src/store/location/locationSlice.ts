@@ -2,7 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 const locationSlice = createSlice({
   name: "location",
   initialState: {
-    locations: [],
+    locations: [{ _id: "" }],
     activeLocation: null,
   },
   reducers: {
@@ -10,14 +10,14 @@ const locationSlice = createSlice({
       state.locations = action.payload;
     },
     addLocation: (state, action) => {
-      state.locations.push(action.payload);
+      state.locations = [...state.locations, action.payload];
     },
     setActiveLocation: (state, action) => {
       state.activeLocation = action.payload;
     },
     updateLocation: (state, action) => {
       state.locations = state.locations.map((location) =>
-        location.id === action.payload.id ? { ...action.payload } : location
+        location._id === action.payload.id ? { ...action.payload } : location
       );
     },
     deleteLocationById: (state, action) => {

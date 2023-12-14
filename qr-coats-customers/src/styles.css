@@ -1,3 +1,7 @@
+body {
+  background-color: #2e2f47 !important;
+}
+
 @font-face {
   font-family: "AttenBold";
   src: url("/fonts/AttenRoundNewBold.otf") format("opentype"); /* Ruta a tu archivo de fuente */
@@ -93,3 +97,6 @@
   background-color: #b8bcfe !important;
 }
 
+.mantine-1fqo4f7>tbody>tr>td{
+  border-top: none !important;
+}
