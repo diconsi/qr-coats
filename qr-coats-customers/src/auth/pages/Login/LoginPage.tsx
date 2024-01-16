@@ -22,8 +22,8 @@ interface UserState {
 }
 
 const initialState: UserState = {
-  userName: "chepsito",
-  password: "123456",
+  userName: "",
+  password: "",
 };
 
 interface ValidationRules {
@@ -128,7 +128,7 @@ const LoginPage: React.FC = () => {
             helperText={errors.password}
             endAdornmentIcon={<HttpsIcon />}
             showPassword={showPassword}
-            onTogglePasswordVisibility={handleTogglePasswordVisibility}
+            onClickIcon={handleTogglePasswordVisibility}
           />
         </Grid>
         <Grid container display={errorMessage ? "" : "none"} sx={{ mt: 2 }}>

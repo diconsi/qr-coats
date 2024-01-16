@@ -5,7 +5,7 @@ import axios from "axios";
 export const getClubesByUser = (idAdmin: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`${currentEnpoint}api/v1/user/${idAdmin}`, {
+    call: axios.get(`${currentEnpoint}user/${idAdmin}`, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -18,7 +18,7 @@ export const getClubesByUser = (idAdmin: string, accesToken: string) => {
 export const createEmployee = (accesToken: string, userData: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post(`${currentEnpoint}api/v1/auth/signup`, userData, {
+    call: axios.post(`${currentEnpoint}auth/signup`, userData, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -31,7 +31,7 @@ export const createEmployee = (accesToken: string, userData: any) => {
 export const updateUser = (id: string, user: any, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.put(`${currentEnpoint}api/v1/user/${id}`, user, {
+    call: axios.put(`${currentEnpoint}user/${id}`, user, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -44,7 +44,7 @@ export const updateUser = (id: string, user: any, accesToken: string) => {
 export const deleteUser = (id: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.put(`${currentEnpoint}api/v1/user/delete/${id}`, {
+    call: axios.put(`${currentEnpoint}user/delete/${id}`, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -57,15 +57,28 @@ export const deleteUser = (id: string, accesToken: string) => {
 export const getEmployeesByAdmin = (idAdmin: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(
-      `${currentEnpoint}api/v1/user/getEmployessByAdmin/${idAdmin}`,
-      {
-        signal: controller.signal,
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      }
-    ),
+    call: axios.get(`${currentEnpoint}user/getEmployessByAdmin/${idAdmin}`, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
+    }),
     controller,
   };
 };
+
+
+
+export const updatePassword = (id: string, user: any, accesToken: string) => {
+  const controller = loadAbort();
+  return {
+    call: axios.put(`${currentEnpoint}user/updatePassword/${id}`, user, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
+    }),
+    controller,
+  };
+};
+

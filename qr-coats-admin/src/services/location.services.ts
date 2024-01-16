@@ -5,7 +5,7 @@ import axios from "axios";
 export const getLocations = (idClub: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`${currentEnpoint}api/v1/location/${idClub}`, {
+    call: axios.get(`${currentEnpoint}location/byClub/${idClub}`, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -18,7 +18,24 @@ export const getLocations = (idClub: string, accesToken: string) => {
 export const createLocation = (accesToken: string, locationData: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post(`${currentEnpoint}api/v1/location`, locationData, {
+    call: axios.post(`${currentEnpoint}location`, locationData, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
+    }),
+    controller,
+  };
+};
+
+export const updatedLocation = (
+  id: string,
+  locationData: any,
+  accesToken: string
+) => {
+  const controller = loadAbort();
+  return {
+    call: axios.put(`${currentEnpoint}location/${id}`, locationData, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -30,21 +47,17 @@ export const createLocation = (accesToken: string, locationData: any) => {
 
 export const eliminaLocation = (
   id: string,
-  update: any,
-  accesToken: string
+  accesToken: string,
+  body: object
 ) => {
   const controller = loadAbort();
   return {
-    call: axios.put(
-      `${currentEnpoint}api/v1/location/delete/${id}`,
-      update,
-      {
-        signal: controller.signal,
-        headers: {
-          Authorization: `Bearer ${accesToken}`,
-        },
-      }
-    ),
+    call: axios.put(`${currentEnpoint}location/delete/${id}`, body, {
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${accesToken}`,
+      },
+    }),
     controller,
   };
 };

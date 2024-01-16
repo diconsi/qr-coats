@@ -8,16 +8,12 @@ import { uploadFile } from "@/firebase/config";
 import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
 import { updateUser } from "@/services";
 import { updateProfile } from "@/store/auth/authSlice";
+import { fileClon } from "@/tools";
 import { CheckingAuth } from "@/ui";
 import { SaveAltOutlined } from "@mui/icons-material";
 import CameraIcon from "@mui/icons-material/CameraAltOutlined";
-
 import { Avatar, Grid, IconButton } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
-
-const fileClon = (file: Blob, name: string, type?: string): File => {
-  return new File([file], name, { type: type || file.type });
-};
 
 interface IUserData {
   uid: string;

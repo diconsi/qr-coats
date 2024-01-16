@@ -8,6 +8,7 @@ import { updateUser } from "@/services";
 interface Field {
   name: string;
   visible: boolean;
+  status?: boolean;
 }
 
 interface GuestFormState {
@@ -30,11 +31,11 @@ const GuestForm: React.FC = () => {
 
   const customInputs: Field[] = (customFields || []).map((item) => ({
     name: item.name,
-    visible: true,
+    visible: item.status,
   }));
 
   const fields: Field[] = [
-    ...customInputs.map((item) => ({ ...item, visible: true })),
+    ...customInputs.map((item) => ({ ...item})),
     ...guestFields.map((item) => ({ ...item, id: uuidv4() })),
   ];
 
@@ -66,7 +67,7 @@ const GuestForm: React.FC = () => {
     // Revisar lógica
     console.log(data);
   };
-
+console.log(fields)
   return (
     <Grid
       container

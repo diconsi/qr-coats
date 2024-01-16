@@ -18,24 +18,39 @@ import {
   createLocation,
   eliminaLocation,
   getLocations,
+  updatedLocation,
 } from "@/services/location.services";
 import {
   addLocation,
   deleteLocationById,
   setLocations,
+  updateLocation,
 } from "@/store/location/locationSlice";
 import { ActionIcon, Group } from "@mantine/core";
 import { DeleteOutline, EditOutlined } from "@mui/icons-material";
 import MapOutlinedIcon from "@mui/icons-material/MapOutlined";
 import {
+  Alert,
+  ButtonGroup,
   FormControl,
   Grid,
   MenuItem,
   Select,
   SelectChangeEvent,
+  Typography,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
+interface ILocation {
+  clubId: string;
+  locationType: string;
+  name: string;
+  numberOfHangers: number;
+  numberSlots: number;
+  status: boolean;
+  _id: string;
+}
+
 const initialState = {
   locationType: "",
   name: "",
@@ -53,8 +68,9 @@ const Location = () => {
     init();
   }, []);
   const init = async () => {
-    const { data } = await callEndpoint(getLocations(_id, access_token));
-    dispatch(setLocations(data));
+    const resp = await callEndpoint(getLocations(_id, access_token));
+    const data = resp.data as unknown as [ILocation];
+    dispatch(setLocations(data.filter((element) => element.status !== false)));
   };
 
   const { callEndpoint } = useFetchAndLoad();
@@ -79,6 +95,13 @@ const Location = () => {
     });
   };
 
+  const onChangeHangers = (name: string, value: number) => {
+    setState({
+      ...state,
+      [name]: value,
+    });
+  };
+
   const onChangeSelect = (event: SelectChangeEvent<string>) => {
     setState({
       ...state,
@@ -88,11 +111,11 @@ const Location = () => {
 
   const handleActioModal = (
     titleModal: string,
+    _id: string = "",
     locationType: string = "",
     name: string = "",
     numberOfHangers: number = 0,
-    numberSlots: number = 0,
-    _id: string = ""
+    numberSlots: number = 0
   ) => {
     if (location !== undefined) setActiveLocation(_id);
     if (titleModal === editLocation) {
@@ -106,6 +129,7 @@ const Location = () => {
     setShowModal(false);
     setState(initialState);
     setActiveLocation("");
+    setAlertMessage("");
   };
   const columns = [
     { accessor: "name", title: "LOCATION", textAlignment: "center" },
@@ -150,12 +174,11 @@ const Location = () => {
           onClick={() =>
             handleActioModal(
               editLocation,
-
+              _id,
               locationType,
               name,
               numberOfHangers,
-              numberSlots,
-              _id
+              numberSlots
             )
           }
         >
@@ -191,14 +214,10 @@ const Location = () => {
   };
 
   const onDeletedLocation = async () => {
-    const resp = await callEndpoint(
-      eliminaLocation(activeLocation, { status: false }, access_token)
+    const { status, data } = await callEndpoint(
+      eliminaLocation(activeLocation, access_token, { status: false })
     );
-
-    const {
-      status,
-      data: { _id },
-    } = resp;
+    const { _id } = data as { _id: string };
     if (status === 200) {
       setActiveLocation("");
       dispatch(deleteLocationById(_id));
@@ -206,21 +225,19 @@ const Location = () => {
     }
   };
 
+  const [alertMessage, setAlertMessage] = useState("");
+
   const onEditLocation = async () => {
-    // const location = {
-    //   name: state.name,
-    //   username: state.username,
-    //   email: state.email,
-    //   gender: state.gender,
-    // };
-    // const { status, data } = await callEndpoint(
-    //   updateUser(activeUser._id, employee, access_token)
-    // );
-    // if (status === 200) {
-    //   setActiveLocation({});
-    //   dispatch(updateLocation(data));
-    //   onClosedModal();
-    // }
+    try {
+      const { data } = await callEndpoint(
+        updatedLocation(activeLocation, state, access_token)
+      );
+      setActiveLocation("");
+      dispatch(updateLocation(data));
+      onClosedModal();
+    } catch (error: any) {
+      setAlertMessage(error.response.data.error.message);
+    }
   };
 
   const onSave = () => {
@@ -233,14 +250,33 @@ const Location = () => {
     }
   };
 
+  const renderAlert = () => {
+    const message =
+      titleModal === deleteLocation
+        ? "You really want to remove the location!"
+        : alertMessage;
+    return (
+      <Alert
+        severity="error"
+        sx={{
+          borderRadius: "30px",
+          bgcolor: "#D5E7FF",
+          color: "#2B2E3A",
+          fontSize: "10PX",
+          alignItems: "center",
+        }}
+      >
+        {message.toUpperCase()}
+      </Alert>
+    );
+  };
+
   const renderBody = () => {
     return (
       <>
         {titleModal === deleteLocation ? (
-          <Grid item sx={{ width: "100%" }}>
-            You really want to remove <strong>the location!</strong>
-          </Grid>
-        ) : (
+          renderAlert()
+        ) : alertMessage === "" ? (
           <Grid container>
             <Grid item mt={1} md={12}>
               <InputText
@@ -254,6 +290,7 @@ const Location = () => {
             <Grid item mt={1} md={12} sx={{ pr: 0.5 }}>
               <FormControl sx={{ width: "100%" }}>
                 <Select
+                  disabled={titleModal === editLocation}
                   value={state.locationType}
                   onChange={onChangeSelect}
                   id="locationType"
@@ -278,38 +315,111 @@ const Location = () => {
                 </Select>
               </FormControl>
             </Grid>
-            {state.locationType !== "Entry" && (
-              <>
-                <Grid item mt={1} md={6}>
-                  <InputText
-                    placeholder="Hangers"
-                    type="number"
-                    name="numberOfHangers"
-                    value={state.numberOfHangers}
-                    onChange={onChange}
-                    inputProps={{
-                      min: 0,
-                      step: 1,
-                    }}
-                  />
+            <Grid item md={12}>
+              {state.locationType !== "Entry" && (
+                <Grid container width={"100%"} height={"100%"}>
+                  <Grid
+                    item
+                    display={"flex"}
+                    flexDirection={"column"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    mt={1}
+                    md={6}
+                  >
+                    <Typography>HANGERS</Typography>
+                    <ButtonGroup
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        bgcolor: "#656581",
+                        borderRadius: "30px",
+                        width: "60%",
+                      }}
+                    >
+                      <CustomButton
+                        label="-"
+                        onClick={() =>
+                          onChangeHangers(
+                            "numberOfHangers",
+                            Math.max(state.numberOfHangers - 1, 0)
+                          )
+                        }
+                        style={{
+                          border: "none",
+                          borderRadius: "30px",
+                        }}
+                      />
+                      <Typography>{state.numberOfHangers}</Typography>
+                      <CustomButton
+                        label={"+"}
+                        onClick={() =>
+                          onChangeHangers(
+                            "numberOfHangers",
+                            state.numberOfHangers + 1
+                          )
+                        }
+                        style={{
+                          border: "none",
+                          borderRadius: "30px",
+                        }}
+                      />
+                    </ButtonGroup>
+                  </Grid>
+                  <Grid
+                    item
+                    display={"flex"}
+                    flexDirection={"column"}
+                    alignItems={"center"}
+                    justifyContent={"center"}
+                    mt={1}
+                    md={6}
+                  >
+                    <Typography>SLOTS</Typography>
+                    <ButtonGroup
+                      disabled={!slotsActive}
+                      sx={{
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        bgcolor: "#656581",
+                        borderRadius: "30px",
+                        width: "60%",
+                      }}
+                    >
+                      <CustomButton
+                        label="-"
+                        onClick={() =>
+                          onChangeHangers(
+                            "numberSlots",
+                            Math.max(state.numberSlots - 1, 0)
+                          )
+                        }
+                        style={{
+                          border: "none",
+                          borderRadius: "30px",
+                        }}
+                      />
+                      <Typography>{state.numberSlots}</Typography>
+                      <CustomButton
+                        label={"+"}
+                        onClick={() =>
+                          onChangeHangers("numberSlots", state.numberSlots + 1)
+                        }
+                        style={{
+                          border: "none",
+                          borderRadius: "30px",
+                        }}
+                      />
+                    </ButtonGroup>
+                  </Grid>
                 </Grid>
-                <Grid item mt={1} md={6}>
-                  <InputText
-                    placeholder="Slots"
-                    type="number"
-                    name="numberSlots"
-                    value={state.numberSlots}
-                    disabled={slotsActive}
-                    onChange={onChange}
-                    inputProps={{
-                      min: 0,
-                      step: 1,
-                    }}
-                  />
-                </Grid>
-              </>
-            )}
+              )}
+            </Grid>
           </Grid>
+        ) : (
+          renderAlert()
         )}
       </>
     );

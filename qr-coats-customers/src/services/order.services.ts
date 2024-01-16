@@ -1,3 +1,4 @@
+import { currentEnpoint } from "@/constants";
 import { loadAbort } from "@/tools";
 import axios from "axios";
 
@@ -12,7 +13,7 @@ export interface orderDto {
 export const getOrders = (creator: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`https://d21ln96nsulz10.cloudfront.net/api/v1/order/getOrdersByCustomer/${creator}`, {
+    call: axios.get(`${currentEnpoint}order/getOrdersByCustomer/${creator}`, {
       headers: {
         Authorization: `Bearer ${accesToken}`,
       },
@@ -26,7 +27,7 @@ export const getOrders = (creator: string, accesToken: string) => {
 export const createOrder = (accesToken: string, data: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post("https://d21ln96nsulz10.cloudfront.net/api/v1/order", data, {
+    call: axios.post(`${currentEnpoint}order`, data, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,

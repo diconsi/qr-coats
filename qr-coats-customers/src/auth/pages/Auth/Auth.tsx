@@ -3,9 +3,10 @@ import { CustomButton } from "@/clube/components";
 import { loginPath, resgiterPath } from "@/constants";
 import { useAppDispatch, useFetchAndLoad, useRedirectTo } from "@/hooks";
 import { signIn, signInGoogle, signUp } from "@/services";
-import { login, setErrorMessage } from "@/store/auth/authSlice";
+import { login, setErrorMessage, setIdClub } from "@/store/auth/authSlice";
 import { Button, Grid, Typography } from "@mui/material";
 import { GoogleCredentialResponse, GoogleLogin } from "@react-oauth/google";
+import { useEffect } from "react";
 import { Link } from "react-router-dom";
 import { v4 as uuidv4 } from "uuid";
 
@@ -70,6 +71,18 @@ const Auth = () => {
   const onError = () => {
     console.log("response");
   };
+
+  const url = new URL(window.location.href);
+  const idClubParam = url.searchParams.get("idClub");
+
+  useEffect(() => {
+    if (idClubParam !== null) {
+      dispatch(setIdClub(idClubParam));
+    } else {
+      dispatch(setIdClub(""));
+    }
+  }, [idClubParam, dispatch]);
+
   return (
     <AuthLayout>
       <Grid
@@ -118,7 +131,7 @@ const Auth = () => {
             SIGN IN WITH
           </Typography>
         </Grid>
-        <Grid item xs={12} >
+        <Grid item xs={12}>
           <Grid container>
             <Grid
               item

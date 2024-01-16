@@ -1,5 +1,5 @@
 import { InputAdornment, TextField } from "@mui/material";
-import { ChangeEvent, FC, ReactNode } from "react";
+import { ChangeEvent, FC, FocusEventHandler, ReactNode } from "react";
 interface InputTextProps {
   label?: string;
   type: string;
@@ -8,11 +8,14 @@ interface InputTextProps {
   error?: boolean;
   helperText?: string;
   value: string | number;
-  onChange: (event: ChangeEvent<HTMLInputElement>) => void;
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+  onBlur?:
+    | FocusEventHandler<HTMLInputElement | HTMLTextAreaElement>
+    | undefined;
   endAdornmentIcon?: ReactNode;
   sx?: object;
   showPassword?: boolean;
-  onTogglePasswordVisibility?: () => void;
+  onClickIcon?: () => void;
 }
 
 const InputText: FC<InputTextProps> = ({
@@ -24,13 +27,15 @@ const InputText: FC<InputTextProps> = ({
   helperText,
   value,
   onChange,
+  onBlur,
   endAdornmentIcon,
   sx,
   showPassword,
-  onTogglePasswordVisibility,
+  onClickIcon,
 }) => {
   return (
     <TextField
+      onBlur={onBlur ? onBlur : undefined}
       label={label}
       type={showPassword ? "text" : type}
       id={name}
@@ -65,7 +70,7 @@ const InputText: FC<InputTextProps> = ({
               marginRight: "12px",
             }}
             position="end"
-            onClick={onTogglePasswordVisibility}
+            onClick={onClickIcon}
           >
             {endAdornmentIcon}
           </InputAdornment>
@@ -77,7 +82,6 @@ const InputText: FC<InputTextProps> = ({
       sx={{
         ...sx,
         margin: "0",
-        background: "transparent",
         borderRadius: "30px",
         "& .custom-input-class": {
           paddingTop: "10px!important",

@@ -14,7 +14,7 @@ const clubSlice = createSlice({
       customNote: "",
       icon: "",
       iconQrVisible: false,
-      services: [{ enable: false, id: "", name: "", price: 0, status: false }],
+      services: [{ enable: false, id: "", name: "", price: "", status: false }],
       informationGuest: {
         email: false,
         lastName: false,
@@ -22,7 +22,7 @@ const clubSlice = createSlice({
         phone: false,
       },
       withInformationGuest: false,
-      customFields: [{ id: "", name: "" }],
+      customFields: [{ id: "", name: "", status: false }],
     },
     activeReceipt: {
       _id: "",
@@ -40,7 +40,7 @@ const clubSlice = createSlice({
       {
         name: "",
         email: "",
-        img: null,
+        photo: null,
         services: {
           id: "",
           name: "",
@@ -57,7 +57,7 @@ const clubSlice = createSlice({
         enable: true,
         id: "",
         name: "",
-        price: 0,
+        price: "",
         status: false,
         total: 0,
       },
@@ -105,6 +105,7 @@ const clubSlice = createSlice({
     },
     updateServices: (state, action) => {
       const { id, amount } = action.payload;
+
       const updatedServices = state.services.map((service: IService) => {
         if (service.id === id) {
           if (amount === -1 && service.total === 0) {

@@ -2,19 +2,26 @@ import { CustomButton } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
 import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
 import { createOrder } from "@/services/order.services";
-import { setOrder, setServices } from "@/store/club/clubSlice";
+import {
+  setActiveReceipt,
+  setOrder,
+  setServices,
+} from "@/store/club/clubSlice";
 import CheckedIcon from "@mui/icons-material/RadioButtonCheckedOutlined";
 import RadioButtonUncheckedIcon from "@mui/icons-material/RadioButtonUnchecked";
 import { Grid, Step, StepLabel, Stepper, Typography } from "@mui/material";
 import { FC, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Payment, Review, Services } from "./pages";
+import { fileClon } from "@/tools";
+import { uploadFile } from "@/firebase/config";
 interface ICustomStepIcon {
   completed: boolean;
 }
 
 interface IQrData {
   qr: object;
+  order: object;
 }
 
 const CustomStepIcon: FC<ICustomStepIcon> = ({ completed }) => {
@@ -49,38 +56,67 @@ const ClubManagment = () => {
   const { callEndpoint } = useFetchAndLoad();
 
   const onPayCash = async () => {
+    const qrUpdated = await Promise.all(
+      qrList.map(async (qr) => {
+        const { photo } = qr;
+        if (photo) {
+          const response = await fetch(photo);
+          const blob = await response.blob();
+          const file = fileClon(blob, uid, "image/jpeg");
+          const url = await uploadFile(file, "customers");
+          return { ...qr, photo: url };
+        } else {
+          return qr;
+        }
+      })
+    );
     const data = {
       clubId: _id,
       creator: uid,
-      qr: qrList,
+      qr: qrUpdated,
       totals,
       paymentStatus: false,
     };
 
     const {
-      data: { qr },
+      data: { qr, order },
     } = (await callEndpoint(createOrder(access_token, data))) as {
       data: IQrData;
     };
-
+    dispatch(setActiveReceipt(order));
     dispatch(setOrder(qr));
     dispatch(setServices({ services: [], promotion: {} }));
     setActiveStep(2);
   };
 
   const onPayCheckout = async () => {
+    const qrUpdated = await Promise.all(
+      qrList.map(async (qr) => {
+        const { photo } = qr;
+        if (photo) {
+          const response = await fetch(photo);
+          const blob = await response.blob();
+          const file = fileClon(blob, uid, "image/jpeg");
+          const url = await uploadFile(file, "customers");
+          return { ...qr, photo: url };
+        } else {
+          return qr;
+        }
+      })
+    );
     const data = {
       clubId: _id,
       creator: uid,
-      qr: qrList,
+      qr: qrUpdated,
       totals,
       paymentStatus: true,
     };
     const {
-      data: { qr },
+      data: { qr, order },
     } = (await callEndpoint(createOrder(access_token, data))) as {
       data: IQrData;
     };
+    dispatch(setActiveReceipt(order));
     dispatch(setOrder(qr));
     dispatch(setServices({ services: [], promotion: {} }));
     setActiveStep(2);
@@ -100,9 +136,11 @@ const ClubManagment = () => {
   };
 
   useEffect(() => {
+    // setActiveStep(2);
     if (location.search !== "" && activeStep !== 2) {
-      console.log("dispara");
       onPayCheckout();
+      // const clientSecret = url.searchParams.get('payment_intent_client_secret');
+      // const { error, paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
     }
   }, [location]);
 
@@ -135,6 +173,7 @@ const ClubManagment = () => {
             <Typography
               width={"70%"}
               p={1}
+              mt={3}
               borderRadius={"30px"}
               bgcolor={"rgba(200, 190, 195, 0.4)"}
               sx={{
@@ -166,7 +205,7 @@ const ClubManagment = () => {
                 {steps.map((label) => (
                   <Step key={label}>
                     <StepLabel StepIconComponent={CustomStepIcon}>
-                      {label}
+                      <span style={{ color: "white" }}> {label}</span>
                     </StepLabel>
                   </Step>
                 ))}

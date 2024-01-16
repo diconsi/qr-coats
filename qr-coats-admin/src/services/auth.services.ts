@@ -10,7 +10,7 @@ interface UserData {
 export const signIn = (userData: UserData) => {
   const controller = loadAbort();
   return {
-    call: axios.post(`${currentEnpoint}api/v1/auth/signin`, userData, {
+    call: axios.post(`${currentEnpoint}auth/signin`, userData, {
       signal: controller.signal,
     }),
     controller,

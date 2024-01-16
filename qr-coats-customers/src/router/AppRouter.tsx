@@ -15,9 +15,9 @@ const AppRouter = () => {
       {status === "authenticated" ? (
         <Route path="/*" element={<ClubesRoutes />} />
       ) : (
-        <Route path="/auth/*" element={<AuthRoutes />} />
+        <Route path="/*" element={<AuthRoutes />} />
       )}
-      <Route path="/*" element={<Navigate to="/auth/dashboard" />} />
+      <Route path="/*" element={<Navigate to="/" />} />
     </Routes>
   );
 };

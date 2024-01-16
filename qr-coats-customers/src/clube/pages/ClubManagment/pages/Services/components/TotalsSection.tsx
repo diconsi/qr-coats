@@ -1,14 +1,14 @@
 import { CustomButton, InputText, ModalComponent } from "@/clube/components";
 import { useAppSelector } from "@/hooks";
 import { Fab, Grid, Typography } from "@mui/material";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, useEffect, useState } from "react";
 import ShoppingTable from "./ShoppingTable";
 
 export interface IService {
   enable: boolean;
   id: string;
   name: string;
-  price: number;
+  price: string;
   status: boolean;
   total: number;
 }
@@ -17,14 +17,22 @@ const TotalsSection = () => {
   const { services, promotion, totals } = useAppSelector(
     (store) => store.clubState
   );
+
   const [decimalValue, setDecimalValue] = useState(0.0);
   const [showModal, setShowModal] = useState(false);
   const [tipPercentage, setTipPercentage] = useState(0.1);
   const [value, setValue] = useState(0.0);
-
-  const isVisibleTable = services.some(
-    (service: IService) => service.total !== 0
+  const [activeButtonIndex, setActiveButtonIndex] = useState<number | null>(
+    0
   );
+
+  const [isVisibleTable, setIsVisibleTable] = useState(false);
+
+  useEffect(() => {
+    setIsVisibleTable(
+      services.some((service: IService) => service.total !== 0)
+    );
+  }, [services]);
 
   const handleDecimalChange = (event: ChangeEvent<HTMLInputElement>) => {
     const value: string = event.target.value;
@@ -33,8 +41,9 @@ const TotalsSection = () => {
     }
   };
 
-  const handleTipClick = (percentage: number) => {
+  const handleTipClick = (percentage: number, index: number) => {
     setDecimalValue(0.0);
+    setActiveButtonIndex(index);
     setTipPercentage(percentage);
   };
 
@@ -52,6 +61,7 @@ const TotalsSection = () => {
   const onClickEdit = () => {
     setDecimalValue(0.0);
     setTipPercentage(0);
+    setActiveButtonIndex(3);
     setShowModal(true);
   };
 
@@ -82,7 +92,6 @@ const TotalsSection = () => {
       </Grid>
     );
   };
-
   return (
     <Grid item xs={12} md={6}>
       {isVisibleTable && (
@@ -98,7 +107,7 @@ const TotalsSection = () => {
               width: "80%",
             }}
           >
-            {[0.1, 0.15, 0.2].map((percentage) => (
+            {[0.1, 0.15, 0.2].map((percentage, index) => (
               <Grid
                 item
                 display={"flex"}
@@ -114,43 +123,28 @@ const TotalsSection = () => {
                     flexDirection: "column",
                     alignItems: "center",
                     padding: 4,
-                    color: "white",
-                    bgcolor: "#656581",
-                    "&:active": {
-                      bgcolor: "#D5E7FF",
-                      color: "black",
-                    },
-                    "&:hover": {
-                      bgcolor: "#D5E7FF",
-                      color: "black",
-                    },
+                    color: activeButtonIndex === index ? "black" : "white",
+                    bgcolor:
+                      activeButtonIndex === index ? "#D5E7FF" : "#656581",
                   }}
-                  onClick={() => handleTipClick(percentage)}
+                  onClick={() => handleTipClick(percentage, index)}
                 >
                   <Typography display="block" variant="h6">{`${
                     percentage * 100
                   }%`}</Typography>
                   <Typography display="block" variant="caption">
-                    ${totals.subtotal * percentage}
+                    ${(totals.subtotal * percentage).toFixed(2)}
                   </Typography>
                 </Fab>
               </Grid>
             ))}
-            <Grid item xs={3} md={3}>
+            <Grid item display={"flex"} justifyContent="center" xs={3} md={3}>
               <Fab
                 sx={{
                   padding: 4,
-                  color: "white",
-                  bgcolor: "#656581",
                   fontSize: "20px",
-                  "&:active": {
-                    bgcolor: "#D5E7FF",
-                    color: "black",
-                  },
-                  "&:hover": {
-                    bgcolor: "#D5E7FF",
-                    color: "black",
-                  },
+                  color: activeButtonIndex === 3 ? "black" : "white",
+                  bgcolor: activeButtonIndex === 3 ? "#D5E7FF" : "#656581",
                 }}
                 onClick={onClickEdit}
               >

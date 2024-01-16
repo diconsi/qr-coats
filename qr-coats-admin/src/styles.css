@@ -146,11 +146,11 @@ body {
 }
 
 .mantine-t91jkm,
-.modal-title {
+.modal-title,
+.MuiAlert-message {
   font-family: "AttenBold";
 }
 
-
-.MuiFormControlLabel-label.Mui-disabled{
+.MuiFormControlLabel-label.Mui-disabled {
   color: white !important;
 }

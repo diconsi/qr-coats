@@ -9,7 +9,7 @@ export interface mailDTO {
 export const getClubesByAdmin = (idAdmin: string, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`${currentEnpoint}api/v1/clube/getClubesByAdmin/${idAdmin}`, {
+    call: axios.get(`${currentEnpoint}clube/getClubesByAdmin/${idAdmin}`, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
@@ -20,14 +20,57 @@ export const getClubesByAdmin = (idAdmin: string, accesToken: string) => {
 };
 
 export const updateClube = (id: string, clubeData: any, accesToken: string) => {
+  console.log(id, clubeData, accesToken, currentEnpoint);
   const controller = loadAbort();
   return {
-    call: axios.put(`${currentEnpoint}api/v1/clube/${id}`, clubeData, {
+    call: axios.put(`${currentEnpoint}clube/${id}`, clubeData, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,
       },
     }),
+    controller,
+  };
+};
+
+export const addCustomField = (
+  id: string,
+  customField: { id: string; name: string },
+  accesToken: string
+) => {
+  const controller = loadAbort();
+  return {
+    call: axios.put(
+      `${currentEnpoint}clube/addCustomField/${id}`,
+      customField,
+      {
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+      }
+    ),
+    controller,
+  };
+};
+
+export const deleteCustomField = (
+  id: string,
+  customField: { id: string },
+  accesToken: string
+) => {
+  const controller = loadAbort();
+  return {
+    call: axios.put(
+      `${currentEnpoint}clube/deleteCustomField/${id}`,
+      customField,
+      {
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${accesToken}`,
+        },
+      }
+    ),
     controller,
   };
 };

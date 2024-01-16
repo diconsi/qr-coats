@@ -19,7 +19,7 @@ interface IService {
   enable: boolean;
   id: string;
   name: string;
-  price: number;
+  price: string;
   status: boolean;
   total: number;
 }
@@ -29,6 +29,7 @@ const ServicesSection = () => {
   const { services, promotion, activeClub } = useAppSelector(
     (store) => store.clubState
   );
+
   const { name, price, status } = promotion;
 
   const handleServiceChange = (serviceId: string, changeAction: number) => {
@@ -100,9 +101,8 @@ const ServicesSection = () => {
                         fontSize: "14px",
                       }}
                     >
-                      ${item.price}{" "}
+                      ${parseFloat(item.price).toFixed(2)}
                       <span style={{ marginLeft: "5px", fontSize: "8px" }}>
-                        {" "}
                         +TAX
                       </span>
                     </div>

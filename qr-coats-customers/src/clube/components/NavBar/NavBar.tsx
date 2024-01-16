@@ -1,19 +1,34 @@
 import qrIcon from "@/assets/Icon-192.png";
+import { currentSocket } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { logout, setViewSidebar } from "@/store/auth/authSlice";
+import { setActiveClub } from "@/store/club/clubSlice";
 import { MenuOutlined } from "@mui/icons-material";
 import PowerIcon from "@mui/icons-material/PowerSettingsNewOutlined";
 import { AppBar, Grid, IconButton, Toolbar } from "@mui/material";
-import { FC } from "react";
+import { FC, useEffect } from "react";
+import { io } from "socket.io-client";
+const socket = io(currentSocket);
 
 interface INavBar {
   drawerWidth: number;
 }
 
 const NavBar: FC<INavBar> = ({ drawerWidth }) => {
+  const { activeClub } = useAppSelector((store) => store.clubState);
   const { isAnonymous, name } = useAppSelector((store) => store.authState);
 
   const dispatch = useAppDispatch();
+  useEffect(() => {
+    socket.on("clube", (data) => {
+      if (activeClub !== null) {
+        if (data._id === activeClub._id) {
+
+          dispatch(setActiveClub(data));
+        }
+      }
+    });
+  }, []);
 
   const onSidebar = () => {
     dispatch(setViewSidebar());
@@ -30,7 +45,7 @@ const NavBar: FC<INavBar> = ({ drawerWidth }) => {
         width: "100%",
         ml: `${drawerWidth}px)`,
         height: "8vh",
-        bgcolor:'transparent',
+        bgcolor: "transparent",
         backdropFilter: "blur(99px)",
       }}
     >

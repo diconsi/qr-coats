@@ -2,7 +2,7 @@ import { IClub } from "@/clube/interfaces";
 import { clubManagmentPath } from "@/constants";
 import { useRedirectTo } from "@/hooks";
 import { setActiveClub } from "@/store/club/clubSlice";
-import { Avatar, Card, Grid } from "@mui/material";
+import { Avatar, Card, Grid, Typography } from "@mui/material";
 import { useDispatch } from "react-redux";
 
 const ClubCard = ({ club }: { club: IClub }) => {
@@ -37,9 +37,11 @@ const ClubCard = ({ club }: { club: IClub }) => {
           height: "100%",
           width: "90%",
           borderRadius: "25%",
-          bgcolor:'#71718A'
+          bgcolor:'#71718A',
+          position:'relative'
         }}
       >
+        <Typography sx={{top:8,position:'absolute'}}>{club.name.toUpperCase()}</Typography>
         <Avatar
           src={club.icon}
           alt="Club Icon"

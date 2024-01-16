@@ -40,7 +40,6 @@ const SWSModal = (props: IModal) => {
     showModal,
     className,
     properties,
-    stylesTitle,
     dialogClassName,
     footerClassName,
     headerProperties,
@@ -66,10 +65,17 @@ const SWSModal = (props: IModal) => {
           style={{
             display: "flex",
             justifyContent: "center",
-            backgroundColor: "#3C3F4A",
+            backgroundColor: "#2E2F47",
+            backdropFilter: "blur(90px)",
           }}
         >
-          <Modal.Title className={titleClassName} style={stylesTitle}>
+          <Modal.Title
+            className={titleClassName}
+            style={{
+              backgroundColor: "#2E2F47",
+              backdropFilter: "blur(90px)",
+            }}
+          >
             {title}
           </Modal.Title>
         </Modal.Header>

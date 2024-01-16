@@ -2,7 +2,7 @@ import { AuthLayout } from "@/auth/layout";
 import { CustomButton, InputText } from "@/clube/components";
 import { loginPath } from "@/constants";
 import { useAppDispatch, useAppSelector, useFetchAndLoad } from "@/hooks";
-import { setErrorMessage } from "@/store/auth/authSlice";
+import { login, setErrorMessage } from "@/store/auth/authSlice";
 import { stateValidator } from "@/tools";
 import WritingIcon from "@mui/icons-material/DriveFileRenameOutline";
 import HttpsIcon from "@mui/icons-material/HttpsOutlined";
@@ -11,7 +11,7 @@ import EmailIcon from "@mui/icons-material/EmailOutlined";
 import { Alert, Grid, Link } from "@mui/material";
 import { ChangeEvent, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { signUp } from "@/services";
+import { signIn, signUp } from "@/services";
 
 interface IUser {
   name: string;
@@ -27,6 +27,12 @@ const initialState: IUser = {
   email: "",
   password: "",
 };
+
+interface UserData {
+  username: string;
+  password: string;
+  rol: string;
+}
 
 interface ValidationRules {
   [key: string]: (value: string) => boolean;
@@ -86,7 +92,19 @@ const RegisterPage = () => {
           isAnonymous: false,
         };
         const { data } = await callEndpoint(signUp(newUser));
-        console.log(data);
+        const { username } = data as UserData;
+        try {
+          const { data } = (await callEndpoint(
+            signIn({ username: username, password: newUser.password })
+          )) as { data: UserData };
+          if (data && data.rol === "customer") {
+            dispatch(login(data));
+          } else {
+            dispatch(setErrorMessage({ errorMessage: "User not found" }));
+          }
+        } catch (error) {
+          dispatch(setErrorMessage({ errorMessage: "User not found" }));
+        }
       } catch (error) {
         dispatch(
           setErrorMessage({ errorMessage: "Error during registration" })
@@ -150,7 +168,7 @@ const RegisterPage = () => {
             helperText={errors.password}
             endAdornmentIcon={<HttpsIcon />}
             showPassword={showPassword}
-            onTogglePasswordVisibility={handleTogglePasswordVisibility}
+            onClickIcon={handleTogglePasswordVisibility}
           />
         </Grid>
         <Grid container display={errorMessage ? "" : "none"} sx={{ mt: 2 }}>
@@ -168,10 +186,20 @@ const RegisterPage = () => {
           </Grid>
         </Grid>
         <Grid container mt={2} flexDirection="row" justifyContent="end">
-          <span style={{ fontWeight: "normal", fontSize: "14px", marginRight:'5px' }}>
+          <span
+            style={{
+              fontWeight: "normal",
+              fontSize: "14px",
+              marginRight: "5px",
+            }}
+          >
             DO YOU ALREADY HAVE AN ACCOUNT?
           </span>
-          <Link component={RouterLink}  style={{ color: "white", textDecoration: "none" }} to={loginPath}>
+          <Link
+            component={RouterLink}
+            style={{ color: "white", textDecoration: "none" }}
+            to={loginPath}
+          >
             LOG IN
           </Link>
         </Grid>

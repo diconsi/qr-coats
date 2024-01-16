@@ -1,6 +1,5 @@
 export * from './ClubManagment';
 export { default as CheckoutForm } from './ClubManagment/pages/Payment/components/CheckoutForm';
-export { default as Completion } from './ClubManagment/pages/Payment/components/Completion';
 export * from './ClubManagment/pages/Payment';
 export * from './ClubManagment/pages/Review';
 export { default as GuestForm } from './ClubManagment/pages/Services/components/GuestForm';

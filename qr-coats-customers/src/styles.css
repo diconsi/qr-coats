@@ -44,10 +44,11 @@ body {
   width: 45% !important;
 }
 
-.css-ezd7k3-MuiStepLabel-label,
+/* .css-ezd7k3-MuiStepLabel-label,
 .css-ezd7k3-MuiStepLabel-label.Mui-active {
   color: white !important;
-}
+} */
+
 .css-ezd7k3-MuiStepLabel-label {
   text-align: center;
   font-size: 10px !important;
@@ -97,6 +98,10 @@ body {
   background-color: #b8bcfe !important;
 }
 
-.mantine-1fqo4f7>tbody>tr>td{
+.mantine-1fqo4f7 > tbody > tr > td {
   border-top: none !important;
+}
+
+.eje > Input {
+  background-color: red !important;
 }

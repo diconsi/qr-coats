@@ -12,20 +12,19 @@ import {
   resetServicesOrder,
 } from "@/store/club/clubSlice";
 import { stateValidator } from "@/tools";
+import AddIcon from "@mui/icons-material/AddCircleOutlined";
 import CameraIcon from "@mui/icons-material/CameraAltOutlined";
 import DeleteIcon from "@mui/icons-material/HighlightOffOutlined";
-import {
-  Avatar,
-  Checkbox,
-  FormControlLabel,
-  FormGroup,
-  Grid,
-  Typography,
-} from "@mui/material";
+import RemoveIcon from "@mui/icons-material/RemoveCircleOutlined";
+import { Avatar, Grid, Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { ChangeEvent, useEffect, useState } from "react";
 import { IService } from "./TotalsSection";
 
+interface IButton {
+  id: string;
+  disabled: boolean;
+}
 interface IUserState {
   name: string;
   email: string;
@@ -66,6 +65,8 @@ const UserSection = () => {
   const [order, setOrder] = useState<IOrder[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [aux, setAux] = useState<IService[]>([]);
+  const [errorCheck, setErrorCheck] = useState("");
+  const [statusButton, setStatusButton] = useState<IButton[]>([]);
 
   useEffect(() => {
     dispatch(resetServicesOrder());
@@ -94,6 +95,8 @@ const UserSection = () => {
   };
 
   const updateOrderSummary = () => {
+    const list = services.map((s) => ({ id: s.id, disabled: false }));
+    setStatusButton(list);
     const deepCopy = services.map((service: IService) => ({ ...service }));
     const updateOrderSummary = deepCopy.map((service) => {
       const allServices = qrList.map((item) => item.services).flat();
@@ -123,7 +126,9 @@ const UserSection = () => {
   const onCloseModal = () => {
     setModal(false);
     clearInputs();
-    setAux(orderSummary);
+    updateOrderSummary();
+    setOrder([]);
+    setErrorCheck("");
   };
 
   const onSave = () => {
@@ -132,18 +137,22 @@ const UserSection = () => {
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
     } else {
-      setErrors({});
-      const newOrder = {
-        name: userState.name,
-        email: userState.email,
-        services: order,
-        img: imgURL,
-      };
-      dispatch(addService(newOrder));
-      setModal(false);
-      setUserState(initialState);
-      setImgURL(null);
-      setOrder([]);
+      if (order.length === 0) {
+        setErrorCheck("Choose an item");
+      } else {
+        setErrors({});
+        const newOrder = {
+          name: userState.name,
+          email: userState.email,
+          services: order,
+          photo: imgURL,
+        };
+        dispatch(addService(newOrder));
+        setModal(false);
+        setUserState(initialState);
+        setImgURL(null);
+        setOrder([]);
+      }
     }
   };
 
@@ -151,33 +160,55 @@ const UserSection = () => {
     setImgURL(img);
   };
 
-  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    const id = name;
+  const deleteItem = (id: string) => {
+    const updatedButtons = statusButton.map((element: IButton) => {
+      if (element.id === id) {
+        return { ...element, disabled: false };
+      } else {
+        return element;
+      }
+    });
+
+    setStatusButton(updatedButtons);
+
+    const filterOrder = order.filter((o) => o.id !== id);
+    setOrder(filterOrder);
     const updateNewSummary = aux.map((service) => {
       if (service.id === id) {
-        return checked
-          ? { ...service, total: (service.total -= 1) }
-          : { ...service, total: (service.total += 1) };
+        return { ...service, total: (service.total += 1) };
+      } else {
+        return service;
+      }
+    });
+    setAux(updateNewSummary);
+  };
+
+  const addItem = (id: string) => {
+    const updatedButtons = statusButton.map((element: IButton) => {
+      if (element.id === id) {
+        return { ...element, disabled: true };
+      } else {
+        return element;
+      }
+    });
+
+    setStatusButton(updatedButtons);
+    const updateNewSummary = aux.map((service) => {
+      if (service.id === id) {
+        return { ...service, total: (service.total -= 1) };
       } else {
         return service;
       }
     });
 
     setAux(updateNewSummary);
-
     const findService = orderSummary.find((service) => service.id === id);
-    if (checked) {
-      if (findService) {
-        const service = {
-          id: findService.id,
-          name: findService.name,
-        };
-        setOrder([...order, service]);
-      }
-    } else {
-      const filterService = order.filter((o) => o.id !== id);
-      setOrder(filterService);
+    if (findService) {
+      const service = {
+        id: findService.id,
+        name: findService.name,
+      };
+      setOrder([...order, service]);
     }
   };
 
@@ -245,27 +276,91 @@ const UserSection = () => {
             alignItems="center"
             sx={{ width: "100%" }}
           >
-            <FormGroup>
-              {aux
-                .filter((service: IService) => service.total > 0)
-                .map((service: IService) => (
-                  <div key={service.id}>
-                    <FormControlLabel
-                      control={
-                        <div>
-                          <Checkbox
-                            sx={{ color: "white" }}
-                            name={service.id.toString()}
-                            onChange={handleCheckboxChange}
-                          />
-                        </div>
-                      }
-                      label={`${service.total} - ${service.name} `}
-                    />
-                  </div>
-                ))}
-            </FormGroup>
+            <Grid container>
+              <Grid
+                item
+                display="flex"
+                justifyContent={"center"}
+                alignItems={"center"}
+                xs={4}
+              >
+                Item
+              </Grid>
+              <Grid
+                item
+                display="flex"
+                justifyContent={"center"}
+                alignItems={"center"}
+                xs={4}
+              >
+                Available
+              </Grid>
+              <Grid
+                item
+                display="flex"
+                justifyContent={"center"}
+                alignItems={"center"}
+                xs={4}
+              >
+                Assigned
+              </Grid>
+            </Grid>
+            {aux.map((service: IService) => {
+              const findButton = statusButton.find(
+                (button: IButton) => button.id === service.id
+              );
+              return (
+                <Grid container key={service.id}>
+                  <Grid
+                    item
+                    display="flex"
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    xs={4}
+                  >
+                    {service.name}
+                  </Grid>
+                  <Grid
+                    item
+                    display="flex"
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    xs={4}
+                  >
+                    {service.total}
+                    <IconButton
+                      aria-label="Eliminar"
+                      sx={{ color: "white" }}
+                      onClick={() => addItem(service.id)}
+                      disabled={service.total <= 0 || findButton?.disabled}
+                    >
+                      <AddIcon />
+                    </IconButton>
+                  </Grid>
+                  <Grid
+                    item
+                    display="flex"
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    xs={4}
+                  >
+                    {!findButton?.disabled ? 0 : 1}
+                    <IconButton
+                      aria-label="Eliminar"
+                      sx={{ color: "white" }}
+                      onClick={() => deleteItem(service.id)}
+                      disabled={!findButton?.disabled}
+                    >
+                      <RemoveIcon />
+                    </IconButton>
+                  </Grid>
+                </Grid>
+              );
+            })}
           </Grid>
+          <span style={{ color: "#ff1744", fontSize: "0.75rem" }}>
+            {errorCheck}
+          </span>
           <Grid item xs={12} md={6} mt={2} mb={2}>
             <InputText
               placeholder="Email"
@@ -341,7 +436,7 @@ const UserSection = () => {
         <Grid item display="flex" alignItems="center">
           <CustomButton
             className={"clube-button"}
-            label={"Generate QR"}
+            label={"Generate Codes"}
             onClick={onAddUser}
           />
         </Grid>
@@ -380,7 +475,7 @@ const UserSection = () => {
                   <Avatar
                     sx={{ width: 25, height: 25 }}
                     alt="user"
-                    src={service.img ? service.img : profileIcon}
+                    src={service.photo ? service.photo : profileIcon}
                   />
                   <Typography sx={{ ml: 2 }}>{service.name}</Typography>
                 </Grid>
@@ -406,6 +501,7 @@ const UserSection = () => {
         })}
       </Grid>
       <ModalComponent
+        title="Generate Your QR Code(s)"
         center
         showModal={modal}
         onHide={onCloseModal}

@@ -1,6 +1,7 @@
 import { clubManagmentPath } from "@/constants";
 import { Button } from "@mui/material";
 import {
+  LinkAuthenticationElement,
   PaymentElement,
   useElements,
   useStripe,
@@ -43,6 +44,7 @@ const CheckoutForm = () => {
 
   return (
     <form id="payment-form" onSubmit={handleSubmit} style={{ width: "100%" }}>
+      <LinkAuthenticationElement />
       <PaymentElement id="payment-element" />
       <Button
         type="submit"

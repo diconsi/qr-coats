@@ -22,7 +22,6 @@ const HomeClubes = () => {
 
   const init = async () => {
     const resp = await callEndpoint(getClubesByAdmin(uid, access_token));
-    console.log("respuesta de api",resp)
     dispatch(setClubes(resp.data));
   };
 

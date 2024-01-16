@@ -17,7 +17,7 @@ const locationSlice = createSlice({
     },
     updateLocation: (state, action) => {
       state.locations = state.locations.map((location) =>
-        location._id === action.payload.id ? { ...action.payload } : location
+        location._id === action.payload._id ? { ...action.payload } : location
       );
     },
     deleteLocationById: (state, action) => {

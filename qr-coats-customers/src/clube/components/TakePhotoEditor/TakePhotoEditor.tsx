@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import Webcam from "react-webcam";
 import { Col, Container, Image, Row } from "react-bootstrap";
-import { ModalComponent } from "..";
-import { Button } from "@mui/material";
+import { CustomButton, ModalComponent } from "..";
+import {  Grid } from "@mui/material";
 
 interface ITake {
   visible: boolean;
@@ -21,7 +21,6 @@ const TakePhotoEditor = ({
   titleModal,
   takePhotoText,
   saveText,
-  loadingText,
   onSavedPhoto,
   imagePreview,
 }: ITake) => {
@@ -92,26 +91,27 @@ const TakePhotoEditor = ({
         </Container>
       }
       footer={
-        <div className="container-footer">
-          <div className="modal-footer" style={{ borderTop: "initial" }}>
-            <Button
-              disabled={loadingButtonSave}
-              variant="contained"
-              onClick={onPressTakePhoto}
-              style={{ width: 150 }}
-            >
-              {loadingButtonSave ? (
-                <span>
-                  {loadingText}... <i aria-hidden="true" />
-                </span>
-              ) : type === "NEW" ? (
-                takePhotoText
-              ) : (
-                saveText
-              )}
-            </Button>
-          </div>
-        </div>
+        <Grid container justifyContent={"end"}>
+          <CustomButton
+            fullWidth={false}
+            label="CANCEL"
+            onClick={onCloseCamera}
+          />
+          <CustomButton
+            style={{ marginLeft: "5px" }}
+            fullWidth={false}
+            disabled={loadingButtonSave}
+            label={
+              loadingButtonSave
+                ? "... "
+                : type === "NEW"
+                ? takePhotoText
+                : saveText
+            }
+            onClick={onPressTakePhoto}
+            background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+          />
+        </Grid>
       }
     />
   );

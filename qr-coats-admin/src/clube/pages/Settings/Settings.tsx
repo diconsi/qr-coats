@@ -1,13 +1,16 @@
 import { CustomButton, HeaderSectionPage, InputText } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
-import { useAppSelector } from "@/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
-import { updateClube } from "@/services";
+import { addCustomField, deleteCustomField, updateClube } from "@/services";
+import { updatedActiveClub } from "@/store/club/clubSlice";
 import { CheckingAuth } from "@/ui";
-import { Label } from "@mui/icons-material";
+import ErrorIcon from "@mui/icons-material/ErrorOutlineOutlined";
 import DeleteIcon from "@mui/icons-material/HighlightOffOutlined";
 import UpdateOutlinedIcon from "@mui/icons-material/UpdateOutlined";
 import {
+  Alert,
+  ButtonGroup,
   Checkbox,
   Container,
   FormControlLabel,
@@ -24,7 +27,7 @@ interface IService {
   enable: boolean;
   id: string;
   name: string;
-  price: number;
+  price: string;
   status: boolean;
 }
 
@@ -41,21 +44,22 @@ interface ICheckBoxOption {
 }
 
 const Settings = () => {
+  const dispatch = useAppDispatch();
   const { callEndpoint, loading } = useFetchAndLoad();
+  const { activeClub } = useAppSelector((store) => store.clubState);
   const {
-    activeClub: {
-      withInformationGuest,
-      withGatewayPayment,
-      informationGuest: guestInfo,
-      withCash: cash,
-      withGateway: gateway,
-      breakNumber: breakN,
-      breakTime: breakT,
-      services,
-      customFields: Fields,
-      _id,
-    },
-  } = useAppSelector((store) => store.clubState);
+    withInformationGuest,
+    withGatewayPayment,
+    informationGuest: guestInfo,
+    withCash: cash,
+    withGateway: gateway,
+    breakNumber: breakN,
+    breakTime: breakT,
+    services,
+    customFields: Fields,
+    _id,
+    numberCustomFields,
+  } = activeClub;
 
   const { access_token } = useAppSelector((store) => store.authState);
 
@@ -67,12 +71,13 @@ const Settings = () => {
     setBreakNumber(breakN);
     setBreakTime(breakT);
     setcustomFields(Fields ? Fields : []);
-  }, []);
+  }, [activeClub]);
 
   const [customFields, setcustomFields] = useState([
     {
       id: "",
       name: "",
+      status: false,
     },
   ]);
   const [breakTime, setBreakTime] = useState(0);
@@ -134,15 +139,21 @@ const Settings = () => {
 
   const handleServicePriceChange =
     (serviceId: string) => (event: ChangeEvent<HTMLInputElement>) => {
-      const value =
-        event.target.value === "" ? 0 : parseFloat(event.target.value);
-      setServiceData((prevServiceData) =>
-        prevServiceData
-          ? prevServiceData.map((service) =>
-              service.id === serviceId ? { ...service, price: value } : service
-            )
-          : []
-      );
+      let inputValue = event.target.value.replace(/[^0-9.]/g, "");
+      inputValue = inputValue === "" ? "0" : inputValue;
+      const decimalCount = inputValue.split(".").length - 1;
+
+      if (decimalCount <= 1) {
+        setServiceData((prevServiceData) =>
+          prevServiceData
+            ? prevServiceData.map((service) =>
+                service.id === serviceId
+                  ? { ...service, price: inputValue }
+                  : service
+              )
+            : []
+        );
+      }
     };
 
   const handleChange =
@@ -162,15 +173,35 @@ const Settings = () => {
   ];
   const [custom, setCustom] = useState("");
 
-  const handleNewCustomField = () => {
+  const handleNewCustomField = async () => {
     const id = uuidv4();
     const newCustomField = {
       id: id,
       name: custom,
     };
-    setcustomFields([...customFields, newCustomField]);
-    setCustom("");
+    const { data, status } = await callEndpoint(
+      addCustomField(_id, newCustomField, access_token)
+    );
+    if (status === 200) {
+      dispatch(updatedActiveClub(data));
+      setCustom("");
+    }
   };
+
+  const onDeleteCustomField = async (id: string) => {
+    const { status, data } = await callEndpoint(
+      deleteCustomField(_id, { id: id }, access_token)
+    );
+    if (status === 200) {
+      dispatch(updatedActiveClub(data));
+    }
+  };
+  const filteredCustomFields = customFields.filter(
+    (field) => field.status !== false
+  );
+
+  const disabledAddCustomInput =
+    filteredCustomFields.length + 1 <= numberCustomFields;
 
   return (
     <ClubeLayout>
@@ -195,140 +226,324 @@ const Settings = () => {
             />
           </Grid>
           <Grid
-            container
-            sx={{
-              height: "90%",
-              width: "100%",
-              overflowY: { xs: "scroll", md: "initial" },
-            }}
+            display="flex"
+            alignItems={"center"}
+            justifyContent={"center"}
+            width={"100%"}
+            height={"90%"}
+            item
           >
-            <Grid item md={12} sx={{ height: { md: "70%" } }}>
-              <Grid container height={"100%"}>
-                <Grid item md={6} xs={12} p={2}>
-                  <Container
-                    sx={{
-                      bgcolor: "#2E313D",
-                      borderRadius: 4,
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      position: "relative",
-                      p: 3,
-                    }}
-                  >
-                    <Typography sx={{ position: "absolute", top: "5px" }}>
-                      SERVICES
-                    </Typography>
-                    <FormGroup
+            <Grid container height={"100%"} width={"100%"}>
+              <Grid item md={12} xs={12} height={"80%"}>
+                <Grid container width={"100%"} height={"100%"}>
+                  <Grid item xs={12} md={6}>
+                    <Grid container height={"100%"}>
+                      <Grid item xs={12} md={12} p={2}>
+                        <Container
+                          sx={{
+                            bgcolor: "#2E313D",
+                            borderRadius: 4,
+                            height: "100%",
+                            display: "flex",
+                            justifyContent: "center",
+                            alignItems: "center",
+                            position: "relative",
+                            p: 3,
+                          }}
+                        >
+                          <Typography sx={{ position: "absolute", top: "5px" }}>
+                            SERVICES
+                          </Typography>
+                          <FormGroup
+                            sx={{
+                              height: "100%",
+                              width: "100%",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                            }}
+                          >
+                            {serviceData !== undefined &&
+                              serviceData.map((service) => (
+                                <Grid
+                                  container
+                                  sx={{ alignItems: "center", mt: 1 }}
+                                  key={service.id}
+                                >
+                                  <Grid item xs={6} md={6}>
+                                    <FormControlLabel
+                                      control={
+                                        <Checkbox
+                                          sx={{
+                                            color: "white",
+                                            "& .MuiSvgIcon-root": {
+                                              color: "white",
+                                            },
+                                          }}
+                                          disabled={!service.enable}
+                                          checked={service.status}
+                                          onChange={handleServiceStatusChange(
+                                            service.id
+                                          )}
+                                        />
+                                      }
+                                      label={service.name}
+                                    />
+                                  </Grid>
+                                  <Grid item xs={6} md={6}>
+                                    <InputText
+                                      type="text"
+                                      value={service.price}
+                                      onChange={handleServicePriceChange(
+                                        service.id
+                                      )}
+                                      disabled={
+                                        !service.enable || !service.status
+                                      }
+                                      inputProps={{
+                                        pattern: "[0-9]*[.]?[0-9]*",
+                                      }}
+                                    />
+                                  </Grid>
+                                </Grid>
+                              ))}
+                          </FormGroup>
+                        </Container>
+                      </Grid>
+                      <Grid item xs={12} md={12}>
+                        <Grid container height={"100%"}>
+                          <Grid item xs={12} md={5} p={2}>
+                            <Container
+                              sx={{
+                                bgcolor: "#2E313D",
+                                borderRadius: 4,
+                                height: "100%",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                position: "relative",
+                                p: 3,
+                              }}
+                            >
+                              <Typography
+                                sx={{ position: "absolute", top: "5px" }}
+                              >
+                                PAYMENTS
+                              </Typography>
+                              <FormGroup>
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      sx={{
+                                        color: "white",
+                                        "& .MuiSvgIcon-root": {
+                                          color: "white",
+                                        },
+                                      }}
+                                      disabled={!withGatewayPayment}
+                                      checked={withGateway}
+                                      onChange={handleGateway}
+                                    />
+                                  }
+                                  label="Gateway Payment"
+                                />
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      sx={{
+                                        color: "white",
+                                        "& .MuiSvgIcon-root": {
+                                          color: "white",
+                                        },
+                                      }}
+                                      checked={withCash}
+                                      onChange={handleCash}
+                                    />
+                                  }
+                                  label="Cash Payment"
+                                />
+                              </FormGroup>
+                            </Container>
+                          </Grid>
+                          <Grid item xs={12} md={7} p={2}>
+                            <Container
+                              sx={{
+                                bgcolor: "#2E313D",
+                                borderRadius: 4,
+                                height: "100%",
+                                display: "flex",
+                                justifyContent: "center",
+                                alignItems: "center",
+                                position: "relative",
+                                p: 3,
+                              }}
+                            >
+                              <Typography
+                                sx={{ position: "absolute", top: "5px" }}
+                              >
+                                BREAK
+                              </Typography>
+                              <Grid container>
+                                <Grid
+                                  item
+                                  xs={12}
+                                  md={6}
+                                  p={1}
+                                  display={"flex"}
+                                  flexDirection={"column"}
+                                  alignItems={"center"}
+                                  justifyContent={"center"}
+                                >
+                                  <Typography textAlign={"center"}>
+                                    BREAK TIME
+                                  </Typography>
+
+                                  <ButtonGroup
+                                    sx={{
+                                      display: "flex",
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                      bgcolor: "#656581",
+                                      borderRadius: "30px",
+                                      width: "60%",
+                                    }}
+                                  >
+                                    <CustomButton
+                                      label="-"
+                                      onClick={() =>
+                                        setBreakTime((prevBreakTime) =>
+                                          Math.max(prevBreakTime - 1, 0)
+                                        )
+                                      }
+                                      style={{
+                                        border: "none",
+                                        borderRadius: "30px",
+                                      }}
+                                    />
+                                    <Typography>{breakTime}</Typography>
+                                    <CustomButton
+                                      label={"+"}
+                                      onClick={() =>
+                                        setBreakTime(breakTime + 1)
+                                      }
+                                      style={{
+                                        border: "none",
+                                        borderRadius: "30px",
+                                      }}
+                                    />
+                                  </ButtonGroup>
+                                </Grid>
+                                <Grid
+                                  item
+                                  xs={12}
+                                  md={6}
+                                  p={1}
+                                  display={"flex"}
+                                  flexDirection={"column"}
+                                  alignItems={"center"}
+                                  justifyContent={"center"}
+                                >
+                                  <Typography textAlign={"center"}>
+                                    ALLOWED BREAKS
+                                  </Typography>
+                                  <ButtonGroup
+                                    sx={{
+                                      display: "flex",
+                                      justifyContent: "center",
+                                      alignItems: "center",
+                                      bgcolor: "#656581",
+                                      borderRadius: "30px",
+                                      width: "60%",
+                                    }}
+                                  >
+                                    <CustomButton
+                                      label="-"
+                                      onClick={() =>
+                                        setBreakNumber((prevBreakNumber) =>
+                                          Math.max(prevBreakNumber - 1, 0)
+                                        )
+                                      }
+                                      style={{
+                                        border: "none",
+                                        borderRadius: "30px",
+                                      }}
+                                    />
+                                    <Typography>{breakNumber}</Typography>
+                                    <CustomButton
+                                      label={"+"}
+                                      onClick={() =>
+                                        setBreakNumber(breakNumber + 1)
+                                      }
+                                      style={{
+                                        border: "none",
+                                        borderRadius: "30px",
+                                      }}
+                                    />
+                                  </ButtonGroup>
+                                </Grid>
+                              </Grid>
+                            </Container>
+                          </Grid>
+                        </Grid>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+                  <Grid item xs={12} md={6} p={2}>
+                    <Container
                       sx={{
+                        bgcolor: "#2E313D",
+                        borderRadius: 4,
                         height: "100%",
-                        width: "100%",
                         display: "flex",
-                        alignItems: "center",
                         justifyContent: "center",
+                        alignItems: "center",
+                        position: "relative",
+                        p: 3,
                       }}
                     >
-                      {serviceData !== undefined &&
-                        serviceData.map((service) => (
-                          <Grid
-                            container
-                            sx={{ alignItems: "center", mt: 1 }}
-                            key={service.id}
-                          >
-                            <Grid item md={6}>
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    sx={{
-                                      color: "white",
-                                      "& .MuiSvgIcon-root": { color: "white" },
-                                    }}
-                                    disabled={!service.enable}
-                                    checked={service.status}
-                                    onChange={handleServiceStatusChange(
-                                      service.id
-                                    )}
-                                  />
-                                }
-                                label={service.name}
-                              />
-                            </Grid>
-                            <Grid item md={6}>
-                              <InputText
-                                type="text"
-                                value={service.price}
-                                onChange={handleServicePriceChange(service.id)}
-                                disabled={!service.enable || !service.status}
-                              />
-                            </Grid>
-                          </Grid>
-                        ))}
-                    </FormGroup>
-                  </Container>
-                </Grid>
-                <Grid item md={6} xs={12} p={2}>
-                  <Container
-                    sx={{
-                      bgcolor: "#2E313D",
-                      borderRadius: 4,
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      position: "relative",
-                      p: 3,
-                    }}
-                  >
-                    <Typography sx={{ position: "absolute", top: "5px" }}>
-                      LOGIN GUEST INFORMATION
-                    </Typography>
-                    <Grid container width={"100%"}>
-                      <Grid
-                        item
-                        xs={12}
-                        md={4}
-                        display="flex"
-                        alignItems="center"
-                      >
-                        <FormGroup>
-                          {checkBoxOptions.map((option) => (
-                            <FormControlLabel
-                              key={option.name}
-                              control={
-                                <Checkbox
-                                  sx={{
-                                    color: "white",
-                                    "& .MuiSvgIcon-root": { color: "white" },
-                                  }}
-                                  disabled={withInformationGuest}
-                                  checked={informationGuest[option.name]}
-                                  onChange={handleChange(option.name)}
-                                />
-                              }
-                              label={option.label}
-                            />
-                          ))}
-                        </FormGroup>
-                      </Grid>
-                      <Grid
-                        item
-                        md={8}
-                        xs={12}
-                        display="flex"
-                        height="100%"
-                        width={"100%"}
-                        justifyContent="center"
-                      >
-                        <Grid container height="100%" width={"100%"}>
+                      <Typography sx={{ position: "absolute", top: "5px" }}>
+                        LOGIN GUEST INFORMATION
+                      </Typography>
+                      {withInformationGuest ? (
+                        <Grid container height={"100%"} width={"100%"}>
                           <Grid
                             item
-                            display={"flex"}
-                            flexDirection={"row"}
-                            alignItems={"center"}
+                            height={"10%"}
+                            xs={12}
                             md={12}
-                            height="20%"
-                            width={"100%"}
+                            display="flex"
+                            justifyContent={"center"}
+                          >
+                            <FormGroup
+                              style={{ display: "flex", flexDirection: "row" }}
+                            >
+                              {checkBoxOptions.map((option) => (
+                                <FormControlLabel
+                                  key={option.name}
+                                  control={
+                                    <Checkbox
+                                      sx={{
+                                        color: "white",
+                                        "& .MuiSvgIcon-root": {
+                                          color: "white",
+                                        },
+                                      }}
+                                      checked={informationGuest[option.name]}
+                                      onChange={handleChange(option.name)}
+                                    />
+                                  }
+                                  label={option.label}
+                                />
+                              ))}
+                            </FormGroup>
+                          </Grid>
+                          <Grid
+                            item
+                            height={"15%"}
+                            xs={12}
+                            md={12}
+                            display="flex"
+                            justifyContent={"center"}
                           >
                             <InputText
                               type="text"
@@ -341,26 +556,21 @@ const Settings = () => {
                               label="ADD"
                               onClick={handleNewCustomField}
                               style={{ marginLeft: "10px" }}
+                              disabled={!disabledAddCustomInput}
                             />
                           </Grid>
-                          <Grid
-                            item
-                            md={12}
-                            width={"100%"}
-                            height="80%"
-                            sx={{
-                              overflowY: "scroll",
-                              "&::-webkit-scrollbar": {
-                                width: "0",
-                              },
-                              "&::-webkit-scrollbar-thumb": {
-                                backgroundColor: "transparent",
-                              },
-                            }}
-                          >
-                            <Grid container width={"100%"}>
-                              {customFields.map((custom) => (
-                                <Grid item xs={12} md={6} key={custom.id}>
+                          <Grid item height={"75%"} xs={12} md={12}>
+                            <Grid
+                              container
+                              width={"100%"}
+                              sx={{
+                                height: "100%",
+                                overflowY: "scroll",
+                                alignContent: "flex-start",
+                              }}
+                            >
+                              {filteredCustomFields.map((custom) => (
+                                <Grid item xs={12} md={3} key={custom.id}>
                                   <Grid
                                     container
                                     sx={{
@@ -394,6 +604,9 @@ const Settings = () => {
                                       <IconButton
                                         aria-label="Eliminar"
                                         sx={{ color: "white" }}
+                                        onClick={() =>
+                                          onDeleteCustomField(custom.id)
+                                        }
                                       >
                                         <DeleteIcon />
                                       </IconButton>
@@ -404,146 +617,26 @@ const Settings = () => {
                             </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
-                    </Grid>
-                  </Container>
+                      ) : (
+                        <Alert
+                          icon={<ErrorIcon sx={{ color: "black" }} />}
+                          sx={{
+                            borderRadius: "30px",
+                            bgcolor: "#D5E7FF",
+                            color: "#2B2E3A",
+                            fontSize: "18PX",
+                            alignItems: "center",
+                            fontFamily: "AttenBold",
+                          }}
+                        >
+                          CONTACT ADMINISTRATOR TO ENABLE THIS FUNCTIONALITY
+                        </Alert>
+                      )}
+                    </Container>
+                  </Grid>
                 </Grid>
               </Grid>
-            </Grid>
-            <Grid item md={12} sx={{ height: { md: "30%" } }}>
-              <Grid container height={"100%"}>
-                <Grid item md={3} xs={12} p={2}>
-                  <Container
-                    sx={{
-                      bgcolor: "#2E313D",
-                      borderRadius: 4,
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      position: "relative",
-                      p: 3,
-                    }}
-                  >
-                    <Typography sx={{ position: "absolute", top: "5px" }}>
-                      PAYMENTS
-                    </Typography>
-                    <FormGroup>
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            sx={{
-                              color: "white",
-                              "& .MuiSvgIcon-root": { color: "white" },
-                            }}
-                            disabled={!withGatewayPayment}
-                            checked={withGateway}
-                            onChange={handleGateway}
-                          />
-                        }
-                        label="Gateway Payment"
-                      />
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            sx={{
-                              color: "white",
-                              "& .MuiSvgIcon-root": { color: "white" },
-                            }}
-                            checked={withCash}
-                            onChange={handleCash}
-                          />
-                        }
-                        label="Cash Payment"
-                      />
-                    </FormGroup>
-                  </Container>
-                </Grid>
-                <Grid item md={3} xs={12} p={2}>
-                  <Container
-                    sx={{
-                      bgcolor: "#2E313D",
-                      borderRadius: 4,
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      position: "relative",
-                      p: 3,
-                    }}
-                  >
-                    <Typography sx={{ position: "absolute", top: "5px" }}>
-                      BREAK
-                    </Typography>
-                    <Grid container>
-                      <Grid item xs={12} md={6}>
-                        <Typography>BREAK TIME</Typography>
-                        <InputText
-                          type="number"
-                          value={breakTime}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            setBreakTime(value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Typography>ALLOWED BREAKS</Typography>
-                        <InputText
-                          type="number"
-                          value={breakNumber}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            setBreakNumber(value);
-                          }}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Container>
-                </Grid>
-                {/* <Grid item md={6} xs={12} p={2}>
-                  <Container
-                    sx={{
-                      bgcolor: "#2E313D",
-                      borderRadius: 4,
-                      height: "100%",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center",
-                      position: "relative",
-                      p: 3,
-                    }}
-                  >
-                    <Typography sx={{ position: "absolute", top: "5px" }}>
-                      BREAK
-                    </Typography>
-                    <Grid container>
-                      <Grid item xs={12} md={6}>
-                        <Typography>BREAK TIME</Typography>
-                        <InputText
-                          type="number"
-                          value={breakTime}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            setBreakTime(value);
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={12} md={6}>
-                        <Typography>ALLOWED BREAKS</Typography>
-                        <InputText
-                          type="number"
-                          value={breakNumber}
-                          onChange={(e) => {
-                            const value = parseInt(e.target.value);
-                            setBreakNumber(value);
-                          }}
-                        />
-                      </Grid>
-                    </Grid>
-                  </Container>
-                </Grid> */}
-              </Grid>
+              <Grid item md={12} xs={12} height={"20%"}></Grid>
             </Grid>
           </Grid>
         </Grid>

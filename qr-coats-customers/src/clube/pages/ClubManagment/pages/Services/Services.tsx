@@ -4,7 +4,7 @@ import { Grid } from "@mui/material";
 import { useEffect } from "react";
 import GuestForm from "./components/GuestForm";
 import ServicesSection from "./components/ServicesSection";
-import TotalsSection from "./components/TotalsSection";
+import TotalsSection, { IService } from "./components/TotalsSection";
 import UserSection from "./components/UserSection";
 
 export interface ISummary {
@@ -21,11 +21,8 @@ const Services = () => {
   const { isAnonymous } = useAppSelector((store) => store.authState);
   const { services: activeServices, withInformationGuest } = activeClub;
   const dispatch = useAppDispatch();
-
   useEffect(() => {
-    if (services.length === 0) {
-      initializeServices();
-    }
+    initializeServices();
   }, [activeClub, services.length]);
 
   const initializeServices = () => {
@@ -39,9 +36,16 @@ const Services = () => {
       .filter((item) => item.id !== "0003");
     dispatch(setServices({ services: servicesClub, promotion: promotion }));
   };
+  const isVisibleTable = services.some(
+    (service: IService) => service.total !== 0
+  );
 
   return (
-    <Grid alignItems="center" container mt={"10%"}>
+    <Grid
+      alignItems={isVisibleTable ? "center" : "initial"}
+      container
+      mt={"10%"}
+    >
       <Grid container>
         <ServicesSection />
         <TotalsSection />

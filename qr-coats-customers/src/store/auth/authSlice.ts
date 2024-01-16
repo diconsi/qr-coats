@@ -15,6 +15,7 @@ interface AuthState {
   nationality: string;
   phone: string;
   birthDate: string;
+  idClub: string;
 }
 const authSlice = createSlice({
   name: "auth",
@@ -34,6 +35,7 @@ const authSlice = createSlice({
     nationality: "",
     phone: "",
     birthDate: "",
+    idClub: "",
   } as AuthState,
   reducers: {
     login: (state, { payload }) => {
@@ -75,6 +77,9 @@ const authSlice = createSlice({
     setErrorMessage: (state, { payload }) => {
       state.errorMessage = payload.errorMessage;
     },
+    setIdClub: (state, { payload }) => {
+      state.idClub = payload;
+    },
   },
 });
 
@@ -85,6 +90,7 @@ export const {
   setViewSidebar,
   updateProfile,
   setErrorMessage,
+  setIdClub
 } = authSlice.actions;
 
 export default authSlice.reducer;

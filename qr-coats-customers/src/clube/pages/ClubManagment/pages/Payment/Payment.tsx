@@ -35,10 +35,28 @@ const Payment = () => {
     }
   };
 
+  const appearance = {
+    variables: {
+      colorBackground: "#2B2C43",
+      colorText: "white",
+      colorDanger: "#df1b41",
+      fontFamily: "Ideal Sans, system-ui, sans-serif",
+      spacingUnit: "2px",
+      borderRadius: "35px",
+    },
+    rules: {
+      ".Input": {
+        border: "2px solid #B8BCFE",
+        paddingLeft: "15px",
+        paddingRight: "15px",
+      },
+    },
+  };
+
   return (
     <Grid container pt={5} height={"90%"}>
       {clientSecret && stripePromise && (
-        <Elements stripe={stripePromise} options={{ clientSecret }}>
+        <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
           <CheckoutForm />
         </Elements>
       )}

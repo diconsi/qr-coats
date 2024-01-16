@@ -44,3 +44,7 @@ export const stateValidator = (
 
   return newErrors;
 };
+
+export const fileClon = (file: Blob, name: string, type?: string): File => {
+  return new File([file], name, { type: type || file.type });
+};

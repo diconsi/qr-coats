@@ -6,9 +6,10 @@ import {
 } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
 import { uploadFiles } from "@/firebase/config";
-import { useAppSelector } from "@/hooks";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
 import { updateClube } from "@/services";
+import { updatedActiveClub } from "@/store/club/clubSlice";
 import { CheckingAuth } from "@/ui";
 import UpdateOutlinedIcon from "@mui/icons-material/UpdateOutlined";
 import { Container, Grid, Typography } from "@mui/material";
@@ -18,8 +19,16 @@ import { QRCode } from "react-qrcode-logo";
 const ClubeProfile = () => {
   const { activeClub } = useAppSelector((store) => store.clubState);
   const { uid, access_token } = useAppSelector((store) => store.authState);
-  const { icon, photo, customNote, closingHour, openingHour, iconQrVisible } =
-    activeClub;
+  const {
+    icon,
+    photo,
+    customNote,
+    closingHour,
+    openingHour,
+    iconQrVisible,
+    _id,
+  } = activeClub;
+  const dispatch = useAppDispatch();
   const [note, setNote] = useState(customNote);
   const [closing, setClosing] = useState(closingHour);
   const [opening, setOpening] = useState(openingHour);
@@ -28,6 +37,14 @@ const ClubeProfile = () => {
   const [selectedFilePhoto, setSelectedFilePhoto] = useState<File | null>(null);
 
   const { callEndpoint, loading } = useFetchAndLoad();
+
+  // const URLCUSTOMER = "https://d3ihwyy3d7cwpe.cloudfront.net/?idClub=";
+  // const URLEMPLOYEE =
+  //   "https://d1mlsbhx4r5mww.cloudfront.net/auth/login?adminId=";
+
+  const URLCUSTOMER = "https://d1cz9ginvjihcr.cloudfront.net/?idClub=";
+  const URLEMPLOYEE =
+    "https://d2cadzk8as2kud.cloudfront.net/auth/login?adminId=";
 
   const handleUpdate = async () => {
     let iconClub = null;
@@ -58,10 +75,11 @@ const ClubeProfile = () => {
     if (!selectedFileIcon) delete newClub.icon;
     if (!selectedFilePhoto) delete newClub.photo;
 
-    const { status } = await callEndpoint(
+    const { status, data } = await callEndpoint(
       updateClube(activeClub._id, newClub, access_token)
     );
     if (status === 200) {
+      dispatch(updatedActiveClub(data));
       setSelectedFileIcon(null);
       setSelectedFilePhoto(null);
     }
@@ -135,7 +153,14 @@ const ClubeProfile = () => {
                     }}
                   >
                     <Typography sx={{ position: "absolute", top: "5px" }}>
-                      QR EMPLOYEE
+                      <a
+                        href={`${URLEMPLOYEE}${uid}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: "none", color: "white" }}
+                      >
+                        QR EMPLOYEE
+                      </a>
                     </Typography>
                     <QRCode
                       logoImage={
@@ -144,7 +169,7 @@ const ClubeProfile = () => {
                       logoHeight={35}
                       logoWidth={35}
                       logoPadding={1}
-                      value={`https://d2cadzk8as2kud.cloudfront.net/auth/login?adminId==${uid}`}
+                      value={`${URLEMPLOYEE}${uid}`}
                     />
                   </Container>
                 </Grid>
@@ -162,7 +187,14 @@ const ClubeProfile = () => {
                     }}
                   >
                     <Typography sx={{ position: "absolute", top: "5px" }}>
-                      QR CLUB
+                      <a
+                        href={`${URLCUSTOMER}${_id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        style={{ textDecoration: "none", color: "white" }}
+                      >
+                        QR CLUB
+                      </a>
                     </Typography>
                     <QRCode
                       logoImage={
@@ -171,14 +203,14 @@ const ClubeProfile = () => {
                       logoHeight={35}
                       logoWidth={35}
                       logoPadding={1}
-                      value={`https://d1cz9ginvjihcr.cloudfront.net`}
+                      value={`${URLCUSTOMER}${_id}`}
                     />
                   </Container>
                 </Grid>
               </Grid>
             </Grid>
             <Grid item md={12} xs={12} sx={{ height: { md: "50%" } }}>
-              <Grid container >
+              <Grid container>
                 <Grid item md={4} xs={12} p={2}>
                   <Container
                     sx={{
@@ -201,7 +233,7 @@ const ClubeProfile = () => {
                     />
                   </Container>
                 </Grid>
-                <Grid item md={8} xs={12} p={2} >
+                <Grid item md={8} xs={12} p={2}>
                   <Container
                     sx={{
                       bgcolor: "#2E313D",

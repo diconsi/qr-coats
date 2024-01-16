@@ -18,6 +18,7 @@ import {
   createEmployee,
   deleteUser,
   getEmployeesByAdmin,
+  updatePassword,
   updateUser,
 } from "@/services";
 import {
@@ -31,6 +32,10 @@ import { DeleteOutline, EditOutlined } from "@mui/icons-material";
 import PasswordOutlinedIcon from "@mui/icons-material/PasswordOutlined";
 import PersonAddOutlinedIcon from "@mui/icons-material/PersonAddOutlined";
 import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControl,
   Grid,
   MenuItem,
@@ -38,6 +43,21 @@ import {
   SelectChangeEvent,
 } from "@mui/material";
 import { ChangeEvent, useEffect, useState } from "react";
+
+interface IEmployee {
+  email: string;
+  gender: string;
+  name: string;
+  password: string;
+  rol: string;
+  status: boolean;
+  username: string;
+  _id: string;
+}
+
+interface IData {
+  employees: [IEmployee];
+}
 
 const initialState = {
   _id: "",
@@ -58,15 +78,10 @@ const Employes = () => {
   }, []);
 
   const init = async () => {
-    const {
-      data: { employees },
-    } = await callEndpoint(getEmployeesByAdmin(uid, access_token));
+    const { data } = await callEndpoint(getEmployeesByAdmin(uid, access_token));
+    const { employees } = data as IData;
     dispatch(
-      setEmployees(
-        employees.filter(
-          (employe: { status: boolean }) => employe.status !== false
-        )
-      )
+      setEmployees(employees.filter((employe) => employe.status !== false))
     );
   };
 
@@ -74,6 +89,8 @@ const Employes = () => {
   const [titleModal, setTitleModal] = useState("");
   const [state, setState] = useState(initialState);
   const [activeUser, setActiveUser] = useState("");
+  const [showModalPassword, setShowModalPassword] = useState(false);
+  const [password, setPassword] = useState("");
 
   const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setState({
@@ -120,7 +137,7 @@ const Employes = () => {
       accessor: "password",
       title: "PASSWORD",
       textAlignment: "center",
-      render: () => renderPassword(),
+      render: ({ _id }: { _id: string }) => renderPassword(_id),
     },
     {
       accessor: "acciones",
@@ -142,10 +159,23 @@ const Employes = () => {
     },
   ];
 
-  const renderPassword = () => {
+  const onClickUpdatedPassword = (_id: string) => {
+    setShowModalPassword(true);
+    setActiveUser(_id);
+  };
+
+  const onUpdatedPassword = async () => {
+    const { status } = await callEndpoint(
+      updatePassword(activeUser, { password: password }, access_token)
+    );
+
+    if (status === 200) setShowModalPassword(false);
+  };
+
+  const renderPassword = (_id: string) => {
     return (
       <Group spacing={4} position="center" noWrap>
-        <ActionIcon color="blue">
+        <ActionIcon color="blue" onClick={() => onClickUpdatedPassword(_id)}>
           <PasswordOutlinedIcon />
         </ActionIcon>
       </Group>
@@ -204,10 +234,10 @@ const Employes = () => {
   };
 
   const onDeletedEmployee = async () => {
-    const {
-      status,
-      data: { _id },
-    } = await callEndpoint(deleteUser(activeUser, access_token));
+    const { status, data } = await callEndpoint(
+      deleteUser(activeUser, access_token)
+    );
+    const { _id } = data as { _id: string };
     if (status === 200) {
       setActiveUser("");
       dispatch(deleteEmployeeById(_id));
@@ -304,7 +334,7 @@ const Employes = () => {
                       {
                         paddingTop: "10px",
                         paddingBottom: "10px",
-                        color:'white'
+                        color: "white",
                       },
                   }}
                 >
@@ -372,6 +402,55 @@ const Employes = () => {
             onHide={onClosedModal}
             footer={renderFooter()}
           />
+          <Dialog
+            open={showModalPassword}
+            onClose={() => setShowModalPassword(false)}
+          >
+            <DialogTitle
+              sx={{
+                color: "white",
+                backgroundColor: "#2E2F47",
+                backdropFilter: "blur(90px)",
+              }}
+            >
+              Updated Password
+            </DialogTitle>
+            <DialogContent
+              sx={{
+                color: "white",
+                backgroundColor: "#2E2F47",
+                backdropFilter: "blur(90px)",
+                paddingTop: "20px !important",
+              }}
+            >
+              <InputText
+                type="password"
+                placeholder="Enter New Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </DialogContent>
+            <DialogActions
+              sx={{
+                color: "white",
+                backgroundColor: "#2E2F47",
+                backdropFilter: "blur(90px)",
+              }}
+            >
+              <CustomButton
+                fullWidth={false}
+                label="CANCEL"
+                onClick={() => setShowModalPassword(false)}
+              />
+              <CustomButton
+                style={{ marginLeft: "5px" }}
+                fullWidth={false}
+                label="GO"
+                onClick={onUpdatedPassword}
+                background="linear-gradient(to bottom, #A482F2, #8CABF0)"
+              />
+            </DialogActions>
+          </Dialog>
         </Grid>
       </Grid>
     </ClubeLayout>
