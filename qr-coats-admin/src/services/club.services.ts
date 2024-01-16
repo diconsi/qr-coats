@@ -20,7 +20,6 @@ export const getClubesByAdmin = (idAdmin: string, accesToken: string) => {
 };
 
 export const updateClube = (id: string, clubeData: any, accesToken: string) => {
-  console.log(id, clubeData, accesToken, currentEnpoint);
   const controller = loadAbort();
   return {
     call: axios.put(`${currentEnpoint}clube/${id}`, clubeData, {

@@ -5,6 +5,7 @@ import {
   TimePickerComponent,
 } from "@/clube/components";
 import { ClubeLayout } from "@/clube/layout";
+import { currentEnpoint, developEndpoint } from "@/constants";
 import { uploadFiles } from "@/firebase/config";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import useFetchAndLoad from "@/hooks/useFetchAndLoad";
@@ -38,13 +39,14 @@ const ClubeProfile = () => {
 
   const { callEndpoint, loading } = useFetchAndLoad();
 
-  // const URLCUSTOMER = "https://d3ihwyy3d7cwpe.cloudfront.net/?idClub=";
-  // const URLEMPLOYEE =
-  //   "https://d1mlsbhx4r5mww.cloudfront.net/auth/login?adminId=";
-
-  const URLCUSTOMER = "https://d1cz9ginvjihcr.cloudfront.net/?idClub=";
+  const URLCUSTOMER =
+    currentEnpoint === developEndpoint
+      ? "https://d1cz9ginvjihcr.cloudfront.net/?idClub="
+      : "https://d3ihwyy3d7cwpe.cloudfront.net/?idClub=";
   const URLEMPLOYEE =
-    "https://d2cadzk8as2kud.cloudfront.net/auth/login?adminId=";
+    currentEnpoint === developEndpoint
+      ? "https://d2cadzk8as2kud.cloudfront.net/auth/login?adminId="
+      : "https://d1mlsbhx4r5mww.cloudfront.net/auth/login?adminId=";
 
   const handleUpdate = async () => {
     let iconClub = null;
