@@ -8,12 +8,7 @@ export const receiptHistoryPath = "/receiptHistory";
 export const profilePath = "/profile";
 export const userDataPath = "/userData";
 export const tableHistoryPath = "/receipt";
-export const localEndpoint = "http://localhost:3000/api/v1/";
-export const developEndpoint = "https://d21ln96nsulz10.cloudfront.net/api/v1/";
-export const productionEndpoint =
-  "https://d16easxps0vxsz.cloudfront.net/api/v1/";
-export const currentEnpoint = developEndpoint;
-export const localSocket = "http://localhost:3000/";
-export const developSocket = "https://d21ln96nsulz10.cloudfront.net/";
-export const productionSocket = "https://d16easxps0vxsz.cloudfront.net/";
-export const currentSocket = developSocket;
+export const localEndpoint = "http://localhost:3000/";
+export const developEndpoint = "https://d21ln96nsulz10.cloudfront.net/";
+export const productionEndpoint = "https://d16easxps0vxsz.cloudfront.net/";
+export const currentEnpoint = localEndpoint;

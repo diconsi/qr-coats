@@ -10,7 +10,7 @@ interface UserData {
 export const signIn = (userData: UserData) => {
   const controller = loadAbort();
   return {
-    call: axios.post(`${currentEnpoint}auth/signin`, userData, {
+    call: axios.post(`${currentEnpoint}api/v1/auth/signin`, userData, {
       signal: controller.signal,
     }),
     controller,
@@ -21,7 +21,7 @@ export const signInGoogle = (token: string) => {
   const controller = loadAbort();
   return {
     call: axios.post(
-      `${currentEnpoint}auth/google`,
+      `${currentEnpoint}api/v1/auth/google`,
       { accessToken: token },
       {
         signal: controller.signal,
@@ -34,7 +34,7 @@ export const signInGoogle = (token: string) => {
 export const signUp = (userData: UserData) => {
   const controller = loadAbort();
   return {
-    call: axios.post(`${currentEnpoint}auth/signup`, userData, {
+    call: axios.post(`${currentEnpoint}api/v1/auth/signup`, userData, {
       signal: controller.signal,
     }),
     controller,
@@ -44,7 +44,7 @@ export const signUp = (userData: UserData) => {
 export const updateUser = (id: string, user: any, accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.put(`${currentEnpoint}user/${id}`, user, {
+    call: axios.put(`${currentEnpoint}api/v1/user/${id}`, user, {
       signal: controller.signal,
       headers: {
         Authorization: `Bearer ${accesToken}`,

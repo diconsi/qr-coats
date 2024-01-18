@@ -9,7 +9,7 @@ export interface mailDTO {
 export const getClubes = (accesToken: string) => {
   const controller = loadAbort();
   return {
-    call: axios.get(`${currentEnpoint}clube`, {
+    call: axios.get(`${currentEnpoint}api/v1/clube`, {
       headers: {
         Authorization: `Bearer ${accesToken}`,
       },
@@ -22,7 +22,7 @@ export const getClubes = (accesToken: string) => {
 export const getKey = () => {
   const controller = loadAbort();
   return {
-    call: axios.get(`${currentEnpoint}stripe`, {
+    call: axios.get(`${currentEnpoint}api/v1/stripe`, {
       signal: controller.signal,
     }),
     controller,
@@ -32,7 +32,7 @@ export const getKey = () => {
 export const createPaymentIntent = (payment: any) => {
   const controller = loadAbort();
   return {
-    call: axios.post(`${currentEnpoint}stripe`, payment, {
+    call: axios.post(`${currentEnpoint}api/v1/stripe`, payment, {
       signal: controller.signal,
     }),
     controller,
@@ -43,7 +43,7 @@ export const sendCustomEmail = (emailDTO: mailDTO, accesToken: string) => {
   const controller = loadAbort();
   return {
     call: axios.post(
-      `${currentEnpoint}clube/sendCustomEmail`,
+      `${currentEnpoint}api/v1/clube/sendCustomEmail`,
       emailDTO,
       {
         headers: {

@@ -43,11 +43,13 @@ const ClubeProfile = () => {
     currentEnpoint === developEndpoint
       ? "https://d1cz9ginvjihcr.cloudfront.net/?idClub="
       : "https://d3ihwyy3d7cwpe.cloudfront.net/?idClub=";
+
   const URLEMPLOYEE =
     currentEnpoint === developEndpoint
       ? "https://d2cadzk8as2kud.cloudfront.net/auth/login?adminId="
       : "https://d1mlsbhx4r5mww.cloudfront.net/auth/login?adminId=";
 
+  console.log(URLCUSTOMER, URLEMPLOYEE);
   const handleUpdate = async () => {
     let iconClub = null;
     let photoClub = null;

@@ -1,5 +1,5 @@
 import qrIcon from "@/assets/Icon-192.png";
-import { currentSocket } from "@/constants";
+import { currentEnpoint } from "@/constants";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { logout, setViewSidebar } from "@/store/auth/authSlice";
 import { setActiveClub } from "@/store/club/clubSlice";
@@ -8,7 +8,7 @@ import PowerIcon from "@mui/icons-material/PowerSettingsNewOutlined";
 import { AppBar, Grid, IconButton, Toolbar } from "@mui/material";
 import { FC, useEffect } from "react";
 import { io } from "socket.io-client";
-const socket = io(currentSocket);
+const socket = io(currentEnpoint);
 
 interface INavBar {
   drawerWidth: number;
@@ -23,7 +23,6 @@ const NavBar: FC<INavBar> = ({ drawerWidth }) => {
     socket.on("clube", (data) => {
       if (activeClub !== null) {
         if (data._id === activeClub._id) {
-
           dispatch(setActiveClub(data));
         }
       }
