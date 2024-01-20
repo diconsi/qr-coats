@@ -70,12 +70,14 @@ const ClubManagment = () => {
         }
       })
     );
+
     const data = {
       clubId: _id,
       creator: uid,
       qr: qrUpdated,
       totals,
       paymentStatus: false,
+      paymentType: "PHYSICAL",
     };
 
     const {
@@ -110,6 +112,7 @@ const ClubManagment = () => {
       qr: qrUpdated,
       totals,
       paymentStatus: true,
+      paymentType: "DIGITAL",
     };
     const {
       data: { qr, order },
@@ -136,11 +139,8 @@ const ClubManagment = () => {
   };
 
   useEffect(() => {
-    // setActiveStep(2);
     if (location.search !== "" && activeStep !== 2) {
       onPayCheckout();
-      // const clientSecret = url.searchParams.get('payment_intent_client_secret');
-      // const { error, paymentIntent } = await stripe.retrievePaymentIntent(clientSecret);
     }
   }, [location]);
 
