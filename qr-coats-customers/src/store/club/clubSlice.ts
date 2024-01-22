@@ -38,6 +38,7 @@ const clubSlice = createSlice({
     },
     qrList: [
       {
+        id: "",
         name: "",
         email: "",
         photo: null,
@@ -86,7 +87,7 @@ const clubSlice = createSlice({
     },
     deleteServiceById: (state, action) => {
       state.qrList = state.qrList.filter(
-        (service) => service.email !== action.payload
+        (service) => service.id !== action.payload
       );
     },
     setOrder: (state, action) => {

@@ -11,4 +11,4 @@ export const tableHistoryPath = "/receipt";
 export const localEndpoint = "http://localhost:3000/";
 export const developEndpoint = "https://d21ln96nsulz10.cloudfront.net/";
 export const productionEndpoint = "https://d16easxps0vxsz.cloudfront.net/";
-export const currentEnpoint = localEndpoint;
+export const currentEnpoint = developEndpoint;

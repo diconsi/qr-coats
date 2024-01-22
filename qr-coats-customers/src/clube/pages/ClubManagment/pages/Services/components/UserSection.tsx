@@ -20,6 +20,7 @@ import { Avatar, Grid, Typography } from "@mui/material";
 import IconButton from "@mui/material/IconButton";
 import { ChangeEvent, useEffect, useState } from "react";
 import { IService } from "./TotalsSection";
+import { v4 } from "uuid";
 
 interface IButton {
   id: string;
@@ -142,6 +143,7 @@ const UserSection = () => {
       } else {
         setErrors({});
         const newOrder = {
+          id: v4(),
           name: userState.name,
           email: userState.email,
           services: order,
@@ -426,8 +428,8 @@ const UserSection = () => {
     (service: IService) => service.total === 0
   );
 
-  const onDeleteService = (email: string) => {
-    dispatch(deleteServiceById(email));
+  const onDeleteService = (id: string) => {
+    dispatch(deleteServiceById(id));
   };
 
   return (
@@ -488,7 +490,7 @@ const UserSection = () => {
                   xs={2}
                 >
                   <IconButton
-                    onClick={() => onDeleteService(service.email)}
+                    onClick={() => onDeleteService(service.id)}
                     aria-label="Eliminar"
                     sx={{ color: "white" }}
                   >
